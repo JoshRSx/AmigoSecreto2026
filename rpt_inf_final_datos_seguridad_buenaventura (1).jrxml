@@ -1,0 +1,129 @@
+<jasperReport name="informe_final_datos_seguridad" language="java" pageWidth="555" pageHeight="802" whenNoDataType="NoDataSection" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="56f3e57b-64fc-4347-8872-1bc7ed0e0938">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="QA_ADAPTER_SAFE2BIZ.jrdax"/>
+	<parameter name="P_SG_INFORME_FINAL_ID" class="java.lang.String"/>
+	<parameter name="no_aplica" class="java.lang.String"/>
+	<parameter name="descripcion_dano" class="java.lang.String"/>
+	<parameter name="tipo_reporte" class="java.lang.String"/>
+	<parameter name="operador_no_aplica" class="java.lang.String"/>
+	<query language="sql"><![CDATA[{call dbo.pr_rpt_informe_final_datos_seguridad($P{P_SG_INFORME_FINAL_ID})}]]></query>
+	<field name="recordInReportCount" class="java.lang.Long"/>
+	<field name="inc_informe_final_accidentado_id" class="java.lang.Long"/>
+	<field name="area_trabajo_nombre" class="java.lang.String"/>
+	<field name="tipo_turno_nombre" class="java.lang.String"/>
+	<field name="numero_dias_turno_nombre" class="java.lang.String"/>
+	<field name="sistema_trabajo_nombre" class="java.lang.String"/>
+	<field name="inc_tipo_involucrado_id" class="java.lang.Integer"/>
+	<field name="diagnostico" class="java.lang.String"/>
+	<field name="costo_evento" class="java.math.BigDecimal"/>
+	<field name="testigos" class="java.lang.String"/>
+	<field name="descripcion_dano_perdida" class="java.lang.String"/>
+	<variable name="rowCount" calculation="Count" class="java.lang.Integer">
+		<expression><![CDATA[$V{rowCount}]]></expression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<title height="15" splitType="Stretch">
+		<element kind="staticText" uuid="3f3aaad7-0ef6-47cf-b3f5-a1e6fc5840f1" x="0" y="0" width="403" height="14" pdfFontName="Helvetica-Bold" bold="true">
+			<text><![CDATA[III. DATOS SEGURIDAD:]]></text>
+		</element>
+	</title>
+	<detail>
+		<band height="80" splitType="Stretch">
+			<element kind="staticText" uuid="b9678b7f-641c-4312-9418-789593eeacd1" x="30" y="0" width="164" height="16">
+				<text><![CDATA[a. Área de Trabajo]]></text>
+			</element>
+			<element kind="staticText" uuid="ee76d651-af0d-41dd-9f11-4b81ec8b7f7e" x="30" y="16" width="164" height="16">
+				<text><![CDATA[b. Turno de Trabajo]]></text>
+			</element>
+			<element kind="staticText" uuid="7f1ce642-dcdb-4184-853b-bcf41994b7f4" x="30" y="32" width="164" height="16">
+				<text><![CDATA[c. Número del día del Turno]]></text>
+			</element>
+			<element kind="staticText" uuid="6d195685-2da7-4243-9013-d006a26ccda7" x="30" y="48" width="164" height="16">
+				<text><![CDATA[d. Sistema de Trabajo]]></text>
+			</element>
+			<element kind="textField" uuid="11c79d28-1f38-48b7-8a25-1dc08e44aad3" x="0" y="0" width="21" height="16" blankWhenNull="true" hTextAlign="Right">
+				<expression><![CDATA[$F{recordInReportCount}!=null?($V{rowCount}+"."):null]]></expression>
+			</element>
+			<element kind="textField" uuid="968b82d8-a325-4e1a-a6e4-acb76125890c" x="225" y="0" width="328" height="16" blankWhenNull="true">
+				<expression><![CDATA[$F{area_trabajo_nombre}]]></expression>
+			</element>
+			<element kind="textField" uuid="78e9f5b6-45bd-4aab-99cc-76e46bcd46f5" x="225" y="16" width="328" height="16" blankWhenNull="true">
+				<expression><![CDATA[$F{tipo_turno_nombre}]]></expression>
+			</element>
+			<element kind="textField" uuid="ad0631e2-067b-4ca0-a591-4edafa2455f6" x="225" y="32" width="328" height="16" blankWhenNull="true">
+				<expression><![CDATA[$F{numero_dias_turno_nombre}]]></expression>
+			</element>
+			<element kind="textField" uuid="e3af6b23-c527-4827-b209-e3ec4ecf16ad" x="225" y="48" width="328" height="16" blankWhenNull="true">
+				<expression><![CDATA[$F{sistema_trabajo_nombre}]]></expression>
+			</element>
+			<element kind="staticText" uuid="05112fd8-8c8f-4824-8253-41460a7c0c4c" x="30" y="64" width="164" height="16">
+				<text><![CDATA[e. Descripción de la pérdida]]></text>
+			</element>
+			<element kind="textField" uuid="6276acd2-78de-43e8-b85e-52402059e70b" x="225" y="64" width="280" height="16" printWhenDetailOverflows="true" textAdjust="StretchHeight" blankWhenNull="true" hTextAlign="Justified">
+				<expression><![CDATA[$F{inc_tipo_involucrado_id}==1 ? ($F{diagnostico}==null?$P{operador_no_aplica}:$F{diagnostico}) :
+                    ($F{inc_tipo_involucrado_id}==2 ? ($F{descripcion_dano_perdida}==null?$P{operador_no_aplica}:$F{descripcion_dano_perdida}) :
+                    ($F{inc_tipo_involucrado_id}==3 ? ($F{descripcion_dano_perdida}==null?$P{operador_no_aplica}:$F{descripcion_dano_perdida}) :
+                    $P{operador_no_aplica}))]]></expression>
+			</element>
+		</band>
+	</detail>
+	<summary height="32">
+		<element kind="textField" uuid="f3350ee1-2f34-4e25-9a11-f21f6e60da11" x="0" y="0" width="194" height="16" positionType="Float">
+			<expression><![CDATA[$F{recordInReportCount}!=null?("     f . Costo del Accidente (S/)"):("           f . Costo del Accidente (S/)")]]></expression>
+		</element>
+		<element kind="textField" uuid="df14154d-cadf-4e4b-a9a0-258e90bfa300" x="0" y="16" width="194" height="16" positionType="Float">
+			<expression><![CDATA[$F{recordInReportCount}!=null?("     g. Testigos"):("           g. Testigos")]]></expression>
+		</element>
+		<element kind="textField" uuid="4c95f6dd-6c33-4a3c-8998-0b6f71304b46" x="225" y="0" width="328" height="16" positionType="Float" pattern="#,##0.00" blankWhenNull="true">
+			<expression><![CDATA[$F{costo_evento}==null ? BigDecimal.ZERO : $F{costo_evento}]]></expression>
+		</element>
+		<element kind="textField" uuid="e1829a21-e823-4466-aad5-4688ea668eb2" x="225" y="16" width="327" height="16" positionType="Float" blankWhenNull="true">
+			<expression><![CDATA[$F{testigos}]]></expression>
+		</element>
+	</summary>
+	<noData height="131">
+		<element kind="frame" uuid="38a97b4a-7a0c-442c-9ba8-878468cfcc28" x="0" y="95" width="555" height="36" mode="Transparent" positionType="Float">
+			<element kind="textField" uuid="746fb413-6fe2-4904-a3ce-01880e76acd0" x="225" y="18" width="327" height="16" pattern="" blankWhenNull="true">
+				<expression><![CDATA[$P{no_aplica}]]></expression>
+			</element>
+			<element kind="textField" uuid="bb97529d-3992-4aad-a078-a64848410214" x="225" y="1" width="327" height="16" pattern="#,##0.00" blankWhenNull="true">
+				<expression><![CDATA[$P{no_aplica}]]></expression>
+			</element>
+			<element kind="staticText" uuid="fc0ebb0f-33c4-4bdb-9d01-9faec741a9e7" x="30" y="18" width="164" height="16">
+				<text><![CDATA[g. Testigos]]></text>
+			</element>
+			<element kind="staticText" uuid="9e4a551b-4e09-4a51-bcb3-70d581757625" x="30" y="1" width="164" height="16">
+				<text><![CDATA[f. Costo del Accidente (S/)]]></text>
+			</element>
+		</element>
+		<element kind="staticText" uuid="2c8f956b-60af-44a0-a843-a7f37343bb10" x="30" y="79" width="164" height="16">
+			<text><![CDATA[e. Descripción de la pérdida]]></text>
+		</element>
+		<element kind="staticText" uuid="27cbfed4-b092-4f78-bb5f-d9155cd8e93a" x="30" y="62" width="164" height="16">
+			<text><![CDATA[d. Sistema de Trabajo]]></text>
+		</element>
+		<element kind="staticText" uuid="fb27d7da-30ed-40f3-9f43-c0d096c5dda5" x="30" y="46" width="164" height="16">
+			<text><![CDATA[c. Número del día del Turno]]></text>
+		</element>
+		<element kind="staticText" uuid="74533eb3-5064-4a3b-a781-94622230d87b" x="30" y="30" width="164" height="16">
+			<text><![CDATA[b. Turno de Trabajo]]></text>
+		</element>
+		<element kind="staticText" uuid="cce138e2-7da9-478c-838e-bfdaf8993bd3" x="0" y="0" width="403" height="14" pdfFontName="Helvetica-Bold" bold="true">
+			<text><![CDATA[III. DATOS SEGURIDAD:]]></text>
+		</element>
+		<element kind="textField" uuid="b286d9d8-23be-4f9a-9c9e-bcd4bc7a3f14" x="225" y="14" width="100" height="16">
+			<expression><![CDATA[$P{no_aplica}]]></expression>
+		</element>
+		<element kind="textField" uuid="6e8c62b0-6d0e-4cf4-a523-60fcf050ca6f" x="225" y="30" width="100" height="16">
+			<expression><![CDATA[$P{no_aplica}]]></expression>
+		</element>
+		<element kind="textField" uuid="6b87c035-747b-4092-bfce-f6b7ef5024f8" x="225" y="46" width="100" height="16">
+			<expression><![CDATA[$P{no_aplica}]]></expression>
+		</element>
+		<element kind="textField" uuid="0260f664-cdbc-4e2b-88d1-c278daa422e2" x="225" y="63" width="100" height="16">
+			<expression><![CDATA[$P{no_aplica}]]></expression>
+		</element>
+	</noData>
+</jasperReport>
