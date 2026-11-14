@@ -19,7 +19,7 @@ Archivos:
    - pin_admin: un PIN solo para ti.
    - hora_inicio: ej. '2026-11-15 16:00' (hora de Lima). Antes de esa hora todos ven una
      cuenta regresiva y nadie puede sortear. Vacío = abierto ya.
-   - whatsapp_anfitrion: tu número con código de país, sin + (ej. '51987654321').
+   - whatsapp_anfitrion: ya viene con 51928504589 (Perú + tu número).
    ⚠️ NO subas tu config.php con la contraseña real a GitHub (el repo es público).
 
 3) SUBIR ARCHIVOS

@@ -35,135 +35,137 @@ const emojis = (s) => `<div class="emojis">${s}</div>`;
 const letras = (s) => `<div class="letras">${s.split(' ').map((l) => `<span>${l}</span>`).join('')}</div>`;
 const serie = (s) => `<div class="serie">${s}</div>`;
 
+
+// Cada juego está inspirado en la profesión o actividad de la persona.
 module.exports = {
-  intentos: 2, // intentos para adivinar al amigo secreto
+  intentos: 2,
   participantes: [
     {
-      nombre: 'Joshua', icono: '😀', juego: 'El desafío de los emojis',
-      desc: 'Descifra qué palabra representan los emojis.',
+      nombre: 'Joshua', icono: '💻', juego: 'Depurando la Navidad',
+      desc: 'Retos de programador: código, binario y mensajes cifrados.',
       niveles: [
-        { tipo: 'texto', enunciado: '¿Qué palabra forman estos emojis?', visual: emojis('☀️ + 🌻'), ayuda: 'Es una flor que siempre mira hacia el sol.', r: ['girasol', 'girasoles'] },
-        { tipo: 'texto', enunciado: '¿Qué parte de la casa es?', visual: emojis('🏠 + 🔥 + 🧦'), ayuda: 'Por aquí baja Papá Noel… o eso dicen.', r: ['chimenea'] },
-        { tipo: 'texto', enunciado: '¿Qué noche especial es?', visual: emojis('🌃 + 👍'), ayuda: 'La noche del 24 de diciembre.', r: ['nochebuena'] },
+        { tipo: 'opciones', enunciado: '¿Qué muestra este código?', visual: '<div class="serie" style="font-family:monospace;font-size:22px">console.log(2 + 3 * 2)</div>', opciones: ['10', '8', '12', '7'], correcta: 1, ayuda: 'La multiplicación va antes que la suma.' },
+        { tipo: 'texto', enunciado: 'Convierte de binario a decimal', visual: serie('1100₂ = ?'), ayuda: '8 + 4 + 0 + 0', r: ['12', 'doce'] },
+        { tipo: 'texto', enunciado: 'Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descífralo.', visual: letras('O B W J E B E'), ayuda: 'Retrocede una letra: O→N, B→A…', r: ['navidad'] },
       ],
     },
     {
-      nombre: 'Estephany', icono: '🎨', juego: 'El código de colores',
-      desc: 'Cada color es una letra. Usa la clave para leer el mensaje.',
+      nombre: 'Estephany', icono: '📚', juego: 'Examen sorpresa navideño',
+      desc: 'Preguntas de colegio con espíritu navideño.',
       niveles: [
-        { tipo: 'texto', enunciado: 'Descubre la palabra oculta', visual: tablaColores([['🟡', 'V'], ['🔴', 'N'], ['🟢', 'E'], ['🔵', 'I'], ['🟣', 'S']]) + codigo(['🔴', '🔵', '🟢', '🟡', '🟢']), ayuda: 'Cae del cielo cuando hace mucho frío.', r: ['nieve'] },
-        { tipo: 'texto', enunciado: 'Descubre la palabra oculta', visual: tablaColores([['🟠', 'O'], ['🔴', 'R'], ['🟣', 'L'], ['🔵', 'E'], ['🟤', 'T'], ['🟢', 'G'], ['🟡', 'A']]) + codigo(['🔴', '🔵', '🟢', '🟡', '🟣', '🟠']), ayuda: 'Lo que todos esperan recibir hoy.', r: ['regalo'] },
-        { tipo: 'texto', enunciado: 'Descubre la palabra oculta', visual: tablaColores([['🟠', 'A'], ['🟣', 'L'], ['🔴', 'E'], ['⚫', 'N'], ['🟡', 'R'], ['🔵', 'S'], ['🟢', 'T']]) + codigo(['🔴', '🔵', '🟢', '🟡', '🔴', '🟣', '🟣', '🟠']), ayuda: 'Va en la punta del árbol.', r: ['estrella'] },
+        { tipo: 'texto', enunciado: 'Papá Noel resolvió esta ecuación. ¿Cuánto vale x?', visual: serie('3x + 5 = 20'), ayuda: 'Primero resta 5 a ambos lados.', r: ['5', 'cinco', 'x5'] },
+        { tipo: 'opciones', enunciado: 'La estrella del árbol es dorada. ¿Cuál es el símbolo químico del oro?', opciones: ['Ag', 'Au', 'Or', 'O'], correcta: 1, ayuda: 'Viene del latín «aurum».' },
+        { tipo: 'sopa', enunciado: 'Encuentra los 3 cursos escondidos', palabras: ['QUIMICA', 'HISTORIA', 'ARTE'], tam: 8, semilla: 41 },
       ],
     },
     {
-      nombre: 'Dante', icono: '🔢', juego: 'Código matemático',
-      desc: 'Resuelve las operaciones y convierte cada resultado en una letra.',
+      nombre: 'Dante', icono: '📊', juego: 'Auditoría navideña',
+      desc: 'Cuadra las cuentas de Papá Noel y encuentra el error.',
       niveles: [
-        { tipo: 'texto', enunciado: 'Cada resultado es una letra. ¿Qué palabra forman?', visual: operaciones(['8 × 2', '5 − 4', '13 × 2']), ayuda: 'Lo contrario de la guerra.', r: ['paz'] },
-        { tipo: 'texto', enunciado: 'Cada resultado es una letra. ¿Qué palabra forman?', visual: operaciones(['3 + 3', '10 − 5', '4 × 3', '18 ÷ 2', '20 + 6']), ayuda: '«___ Navidad»', r: ['feliz'] },
-        { tipo: 'texto', enunciado: 'Cada resultado es una letra. ¿Qué palabra forman?', visual: operaciones(['4 × 5', '7 × 3', '9 × 2', '30 − 12', '45 ÷ 3', '7 + 7']), ayuda: 'Un dulce navideño muy duro.', r: ['turron'] },
+        { tipo: 'texto', enunciado: 'Libro de Papá Noel. ¿Cuál es el saldo?', visual: lista(['Debe: S/ 500 + S/ 300', 'Haber: S/ 200']), ayuda: 'Saldo = total del Debe − total del Haber.', r: ['600', 's600', 'seiscientos'] },
+        { tipo: 'opciones', enunciado: 'Un regalo cuesta S/ 200 sin IGV. ¿Cuánto es el IGV (18 %)?', opciones: ['S/ 18', 'S/ 36', 'S/ 20', 'S/ 38'], correcta: 1, ayuda: '10 % de 200 es 20; 8 % es 16.' },
+        { tipo: 'opciones', enunciado: 'Auditoría: <b>una</b> de estas sumas está mal. ¿Cuál?', opciones: ['120 + 80 = 200', '45 + 55 = 100', '230 + 70 = 310', '15 + 35 = 50'], correcta: 2, ayuda: 'Revisa las decenas con calma.' },
       ],
     },
     {
-      nombre: 'Guillermo', icono: '🕵️', juego: 'La adivinanza misteriosa',
-      desc: 'Lee con atención y resuelve la adivinanza.',
+      nombre: 'Guillermo', icono: '📹', juego: 'Central de monitoreo',
+      desc: 'Revisa las cámaras, activa la alarma y ubica al intruso.',
       niveles: [
-        { tipo: 'texto', enunciado: 'Tengo agujas y no sé coser, tengo números y no sé leer. ¿Qué soy?', ayuda: 'Lo miras para no llegar tarde.', r: ['reloj'] },
-        { tipo: 'texto', enunciado: 'Tengo ciudades pero no casas, montañas pero no árboles, y agua pero no peces. ¿Qué soy?', ayuda: 'Lo usas para no perderte.', r: ['mapa', 'mapamundi'] },
-        { tipo: 'texto', enunciado: 'Llego una vez al año, traigo regalos sin ser rey mago, visto de rojo y vivo en el Polo Norte. ¿Quién soy?', ayuda: 'Tiene barba blanca y renos.', r: ['papa noel', 'papanoel', 'santa claus', 'santa', 'santa clos', 'san nicolas'] },
+        { tipo: 'diferencias', enunciado: 'Cámara 1: encuentra las 4 cosas que cambiaron', difs: ['ventana', 'nariz', 'regalo', 'esfera'] },
+        { tipo: 'candado', enunciado: 'Desactiva la alarma con el código', visual: lista(['1.º ¿Cuánto es 10 − 9?', '2.º Colores de un semáforo', '3.º Ruedas de un auto', '4.º Lados de un hexágono']), ayuda: 'Un hexágono tiene 6 lados.', r: ['1346'] },
+        { tipo: 'opciones', enunciado: 'Un intruso pasó por 3 cámaras. La cámara 2 lo vio primero. La cámara 1 lo vio después que la 3. <b>¿Cuál lo vio al final?</b>', opciones: ['Cámara 1', 'Cámara 2', 'Cámara 3'], correcta: 0, ayuda: 'Ordena: primero la 2, luego…' },
       ],
     },
     {
-      nombre: 'Josefina', icono: '🔠', juego: 'La sopa de letras secreta',
-      desc: 'Encuentra todas las palabras escondidas.',
+      nombre: 'Josefina', icono: '🍲', juego: 'La cocina navideña',
+      desc: 'Juegos de la cocina y la casa. ¡Tómate tu tiempo!',
       niveles: [
-        { tipo: 'sopa', enunciado: 'Encuentra las 3 palabras', palabras: ['NIEVE', 'PAZ', 'AMOR'], tam: 7, semilla: 11 },
-        { tipo: 'sopa', enunciado: 'Encuentra las 3 palabras', palabras: ['REGALO', 'FAMILIA', 'ESTRELLA'], tam: 8, semilla: 22 },
-        { tipo: 'sopa', enunciado: 'Encuentra las 4 palabras', palabras: ['AMISTAD', 'ALEGRIA', 'SORPRESA', 'VILLANCICO'], tam: 10, semilla: 33 },
+        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 3 parejas', pares: ['🍳', '🥄', '🍲'], vista: 8 },
+        { tipo: 'opciones', enunciado: '¿Qué ingrediente <b>NO</b> va en el chocolate caliente?', opciones: ['Leche', 'Cacao', 'Azúcar', 'Cebolla'], correcta: 3 },
+        { tipo: 'opciones', enunciado: '¿Qué preparamos con esto en Navidad?', visual: emojis('🥛 + 🍫'), opciones: ['Chocolatada', 'Ensalada', 'Sopa'], correcta: 0 },
       ],
     },
     {
-      nombre: 'Gabriel', icono: '🔎', juego: 'El caso misterioso',
-      desc: 'Analiza las declaraciones y descubre al culpable.',
+      nombre: 'Gabriel', icono: '🩺', juego: 'Consulta médica navideña',
+      desc: 'Diagnostica, ordena y resuelve el caso clínico.',
       niveles: [
-        { tipo: 'opciones', enunciado: 'Una de estas personas escondió el regalo. <b>Solo una dice la verdad.</b> ¿Quién lo escondió?', visual: lista(['Ana: «Yo no fui».', 'Luis: «Fue Pedro».', 'Pedro: «Luis está mintiendo».']), opciones: ['Ana', 'Luis', 'Pedro'], correcta: 0, ayuda: 'Prueba cada opción: imagina que fue esa persona y cuenta cuántos dicen la verdad.' },
-        { tipo: 'opciones', enunciado: 'Alguien se comió las galletas de Papá Noel. <b>Solo una persona dice la verdad.</b> ¿Quién fue?', visual: lista(['Rosa: «Yo no fui».', 'Tomás: «Fue Rosa».', 'Elena: «Yo no fui».']), opciones: ['Rosa', 'Tomás', 'Elena'], correcta: 2, ayuda: 'Si fue Rosa, ¿cuántos dirían la verdad? ¿Y si fue Tomás?' },
-        { tipo: 'opciones', enunciado: 'El regalo desapareció a las <b>8:00 p. m.</b> ¿Quién pudo hacerlo?', visual: lista(['Mario cocinó con la abuela de 7:00 a 9:00.', 'Lucía dice que vio una película que empezó a las 8:30.', 'Diego tiene un ticket de las 8:05 de una tienda a 30 minutos de la casa.']), opciones: ['Mario', 'Lucía', 'Diego'], correcta: 1, ayuda: '¿Quién no puede demostrar dónde estaba a las 8:00?' },
+        { tipo: 'opciones', enunciado: '¿Cuántos huesos tiene el cuerpo humano adulto?', opciones: ['150', '206', '300', '98'], correcta: 1, ayuda: 'Más de 200.' },
+        { tipo: 'texto', enunciado: 'Ordena las letras: el órgano que más trabaja en Navidad', visual: letras('Z O N A R C O'), ayuda: 'Bombea la sangre.', r: ['corazon'] },
+        { tipo: 'opciones', enunciado: 'Tres pacientes: uno con fiebre, otro con tos y otro con dolor de rodilla. <b>¿Quién tiene fiebre?</b>', visual: lista(['Ana no tiene fiebre ni tos.', 'Beto no tiene fiebre.']), opciones: ['Ana', 'Beto', 'Carla'], correcta: 2, ayuda: '¿Qué le queda a Ana?' },
       ],
     },
     {
-      nombre: 'Noemí', icono: '🃏', juego: 'Memoria fotográfica',
-      desc: 'Memoriza las cartas y encuentra las parejas.',
+      nombre: 'Noemí', icono: '✏️', juego: 'Clase de Navidad',
+      desc: 'Ortografía, útiles y adivinanzas de la profe.',
       niveles: [
-        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 3 parejas', pares: ['🎄', '⭐', '🎁'], vista: 5 },
-        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 4 parejas', pares: ['🎄', '⭐', '🎁', '🔔'], vista: 5 },
-        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 6 parejas', pares: ['🎄', '⭐', '🎁', '🔔', '⛄', '🦌'], vista: 6 },
+        { tipo: 'opciones', enunciado: 'Corrige la tarea: ¿cuál está bien escrita?', opciones: ['Nabidad', 'Navidad', 'Nabidat', 'Navidat'], correcta: 1 },
+        { tipo: 'sopa', enunciado: 'Encuentra los 3 útiles escolares', palabras: ['LAPIZ', 'CUADERNO', 'PIZARRA'], tam: 8, semilla: 52 },
+        { tipo: 'texto', enunciado: 'Tengo hojas y no soy árbol, tengo lomo y no soy caballo. ¿Qué soy?', ayuda: 'Está en la mochila y en la biblioteca.', r: ['libro', 'libros'] },
       ],
     },
     {
-      nombre: 'Patricia', icono: '🔀', juego: 'Letras revueltas',
-      desc: 'Ordena las letras para formar la palabra.',
+      nombre: 'Patricia', icono: '🍎', juego: 'Recreo navideño',
+      desc: 'Letras, plurales y memoria de salón de clases.',
       niveles: [
-        { tipo: 'texto', enunciado: 'Ordena las letras', visual: letras('E V I N E'), ayuda: 'Es blanca y fría.', r: ['nieve'] },
-        { tipo: 'texto', enunciado: 'Ordena las letras', visual: letras('D A V I N A D'), ayuda: 'La fiesta del 25 de diciembre.', r: ['navidad'] },
-        { tipo: 'texto', enunciado: 'Ordena las letras', visual: letras('C I L A V O N C I L'), ayuda: 'Una canción de Navidad.', r: ['villancico'] },
+        { tipo: 'texto', enunciado: 'Ordena las letras', visual: letras('L A U C E S E'), ayuda: 'Ahí trabajas de lunes a viernes.', r: ['escuela'] },
+        { tipo: 'opciones', enunciado: '¿Cuál es el plural correcto de «lápiz»?', opciones: ['Lápizes', 'Lápices', 'Lápiz', 'Lapises'], correcta: 1 },
+        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 6 parejas', pares: ['🍎', '📚', '✏️', '🎒', '📏', '🖍️'], vista: 6 },
       ],
     },
     {
-      nombre: 'Fernando', icono: '🗺️', juego: 'Código de coordenadas',
-      desc: 'Sigue las coordenadas (fila + columna) para leer el mensaje.',
+      nombre: 'Fernando', icono: '🖥️', juego: 'Soporte técnico navideño',
+      desc: 'Redes, puertos y coordenadas para el jefe de sistemas.',
       niveles: [
-        { tipo: 'texto', enunciado: 'Sigue las coordenadas', visual: coordenadas(['P M R S', 'T Z O L', 'E A N I'], 'A1 · C2 · B2'), ayuda: 'A1 es la fila A, columna 1.', r: ['paz'] },
-        { tipo: 'texto', enunciado: 'Sigue las coordenadas', visual: coordenadas(['R N T E', 'V O L I', 'S A M C', 'U P D G'], 'A2 · B4 · A4 · B1 · A4'), ayuda: 'Es blanca y fría.', r: ['nieve'] },
-        { tipo: 'texto', enunciado: 'Sigue las coordenadas', visual: coordenadas(['Q L M S F', 'E T R O B', 'A U N C I', 'G P H D V', 'X Y Z K J'], 'B5 · B1 · A2 · B1 · C3'), ayuda: 'Donde se arma el nacimiento.', r: ['belen'] },
+        { tipo: 'opciones', enunciado: '¿Qué significan las siglas «WWW»?', opciones: ['World Wide Web', 'Wireless Web Window', 'World Web Wire', 'Wide Wireless Web'], correcta: 0 },
+        { tipo: 'candado', enunciado: 'Abre el rack del servidor', visual: lista(['Los dos primeros dígitos: el puerto de HTTP', 'Los dos últimos dígitos: el puerto de SSH']), ayuda: 'HTTP usa el 80.', r: ['8022'] },
+        { tipo: 'texto', enunciado: 'Sigue las coordenadas: ¿dónde guardamos los archivos?', visual: coordenadas(['N X T R', 'Q U M B', 'E L O P', 'K S D I'], 'A1 · B2 · B4 · C1'), ayuda: 'A1 es la fila A, columna 1.', r: ['nube', 'lanube'] },
       ],
     },
     {
-      nombre: 'Valeria', icono: '👀', juego: 'El juego de las diferencias',
-      desc: 'Toca en la imagen de abajo lo que cambió.',
+      nombre: 'Valeria', icono: '🧸', juego: 'El taller de Papá Noel',
+      desc: 'Juegos con dibujos. ¡Pide ayuda si la necesitas!',
       niveles: [
+        { tipo: 'memoria', enunciado: 'Encuentra las parejas', pares: ['🎄', '⭐', '🎁'], vista: 6 },
         { tipo: 'diferencias', enunciado: 'Encuentra las 3 diferencias', difs: ['estrella', 'luna', 'puerta'] },
-        { tipo: 'diferencias', enunciado: 'Encuentra las 4 diferencias', difs: ['ventana', 'nariz', 'regalo', 'esfera'] },
-        { tipo: 'diferencias', enunciado: 'Encuentra las 5 diferencias', difs: ['sombrero', 'humo', 'copo', 'bufanda', 'regalo2'] },
+        { tipo: 'opciones', enunciado: '¿Cuántos regalos hay?', visual: emojis('🎁🎁🎁🎁🎁'), opciones: ['3', '4', '5', '6'], correcta: 2 },
       ],
     },
     {
-      nombre: 'Cesar', icono: '📈', juego: 'La secuencia perdida',
-      desc: 'Descubre qué número sigue en la secuencia.',
+      nombre: 'Cesar', icono: '🔬', juego: 'Laboratorio navideño',
+      desc: 'Muestras, palabras y secuencias de laboratorio.',
       niveles: [
-        { tipo: 'texto', enunciado: '¿Qué número sigue?', visual: serie('5 – 10 – 15 – 20 – ?'), ayuda: 'Fíjate cuánto aumenta cada vez.', r: ['25', 'veinticinco'] },
-        { tipo: 'texto', enunciado: '¿Qué número sigue?', visual: serie('3 – 6 – 12 – 24 – ?'), ayuda: 'Cada número es el doble del anterior.', r: ['48', 'cuarentayocho', 'cuarenta y ocho'] },
-        { tipo: 'texto', enunciado: '¿Qué número sigue?', visual: serie('1 – 1 – 2 – 3 – 5 – 8 – ?'), ayuda: 'Suma los dos números anteriores.', r: ['13', 'trece'] },
+        { tipo: 'opciones', enunciado: '¿Qué grupo sanguíneo es el donante universal?', opciones: ['O−', 'AB+', 'A+', 'B−'], correcta: 0 },
+        { tipo: 'texto', enunciado: 'Ordena las letras', visual: letras('R O T A L O B I R A O'), ayuda: 'Donde trabajas con muestras.', r: ['laboratorio'] },
+        { tipo: 'texto', enunciado: 'Un cultivo crece así. ¿Qué número sigue?', visual: serie('2 – 6 – 18 – 54 – ?'), ayuda: 'Cada número se multiplica por 3.', r: ['162'] },
       ],
     },
     {
-      nombre: 'Jhency', icono: '🧠', juego: 'El detective de las pistas',
-      desc: 'Relaciona la información y deduce la respuesta.',
+      nombre: 'Jhency', icono: '🏥', juego: 'Guardia en pediatría',
+      desc: 'Retos del hospital del niño.',
       niveles: [
-        { tipo: 'opciones', enunciado: 'Ana, Luis y María tienen un color favorito distinto: rojo, azul y verde. <b>¿Qué color eligió Ana?</b>', visual: lista(['Ana no eligió el rojo.', 'Luis eligió el azul.', 'María no eligió el verde.']), opciones: ['Rojo', 'Azul', 'Verde'], correcta: 2, ayuda: 'Empieza por Luis, que es seguro.' },
-        { tipo: 'opciones', enunciado: 'Leo, Mía y Sol trajeron panetón, chocolate y galletas (uno cada uno). <b>¿Quién trajo las galletas?</b>', visual: lista(['Leo no trajo chocolate ni galletas.', 'Mía no trajo galletas.']), opciones: ['Leo', 'Mía', 'Sol'], correcta: 2, ayuda: '¿Qué trajo Leo entonces?' },
-        { tipo: 'opciones', enunciado: 'Hay 4 regalos en fila: rojo, verde, azul y dorado. <b>¿De qué color es el último?</b>', visual: lista(['El rojo está primero.', 'El dorado está justo después del verde.', 'El azul no está al final.']), opciones: ['Rojo', 'Verde', 'Azul', 'Dorado'], correcta: 3, ayuda: 'Si el azul no puede ir último, ¿dónde va?' },
+        { tipo: 'opciones', enunciado: '¿Cuál es la temperatura normal del cuerpo?', opciones: ['36,5 °C', '40 °C', '30 °C', '42 °C'], correcta: 0 },
+        { tipo: 'opciones', enunciado: 'Tres niños en pediatría: uno con yeso, otro con vendaje y otro con curita. <b>¿Quién tiene yeso?</b>', visual: lista(['Leo no tiene yeso ni vendaje.', 'Mía no tiene yeso.']), opciones: ['Leo', 'Mía', 'Sol'], correcta: 2, ayuda: '¿Qué tiene Leo entonces?' },
+        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 6 parejas', pares: ['🩺', '💉', '🌡️', '🧸', '💊', '🩹'], vista: 6 },
       ],
     },
     {
-      nombre: 'Juliett', icono: '🔐', juego: 'El candado misterioso',
-      desc: 'Cada respuesta es un número de la combinación.',
+      nombre: 'Juliett', icono: '🍳', juego: 'La tienda de utensilios',
+      desc: 'Atiende a los clientes de la tienda navideña.',
       niveles: [
-        { tipo: 'candado', enunciado: 'Abre el candado', visual: lista(['1.º ¿Cuánto es 2 + 3?', '2.º ¿Cuántos lados tiene un triángulo?', '3.º ¿Cuánto es 10 − 6?', '4.º ¿Cuántas ruedas tiene una bicicleta?']), ayuda: 'Pon un número por cada pregunta, en orden.', r: ['5342'] },
-        { tipo: 'candado', enunciado: 'Abre el candado', visual: lista(['1.º Patas de una araña ÷ 4', '2.º Colores de un semáforo', '3.º Dedos de una mano', '4.º ¿Cuánto es 3 × 3?']), ayuda: 'Una araña tiene 8 patas.', r: ['2359'] },
-        { tipo: 'candado', enunciado: 'Abre el candado', visual: lista(['Los dos primeros dígitos: el día de Navidad', 'Los dos últimos dígitos: el número del mes de Navidad']), ayuda: 'Diciembre es el mes número…', r: ['2512'] },
+        { tipo: 'opciones', enunciado: 'Un cliente quiere servir la sopa de Navidad. ¿Qué le recomiendas?', opciones: ['Cucharón', 'Tenedor', 'Espátula', 'Pinza'], correcta: 0 },
+        { tipo: 'candado', enunciado: 'Caja registradora: escribe el precio final con 4 dígitos', visual: lista(['Un juego de ollas cuesta S/ 1000.', 'Tiene 20 % de descuento.']), ayuda: 'El 20 % de 1000 es 200. Ej.: S/ 950 se escribe 0950.', r: ['0800'] },
+        { tipo: 'sopa', enunciado: 'Encuentra los 4 utensilios', palabras: ['OLLA', 'SARTEN', 'CUCHARA', 'TAZA'], tam: 8, semilla: 63 },
       ],
     },
     {
-      nombre: 'Ashley', icono: '🎡', juego: 'La ruleta de los desafíos',
+      nombre: 'Ashley', icono: '🎒', juego: 'La ruleta de los desafíos',
       desc: 'Gira la ruleta y supera el desafío que te toque.',
-      niveles: [1, 2, 3].map((n) => ({ tipo: 'ruleta', enunciado: 'Gira la ruleta' })),
+      niveles: [1, 2, 3].map(() => ({ tipo: 'ruleta', enunciado: 'Gira la ruleta' })),
     },
   ],
 };
 
-// Desafíos de la ruleta (uno por categoría y nivel)
+// Desafíos de la ruleta de Ashley (uno por categoría y nivel)
 const R = [
   [
     { tipo: 'texto', enunciado: 'Blanca por dentro, verde por fuera; si quieres que te lo diga, espera. ¿Qué es?', r: ['pera'] },

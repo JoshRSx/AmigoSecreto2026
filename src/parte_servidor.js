@@ -70,7 +70,27 @@ const nuevoProg = () => ({ inicio: null, rondas: [false, false, false], fin: nul
 const claveProg = yo => 'as_prog_' + (DEMO ? 'demo_' : '') + yo;
 const prog = yo => Object.assign(nuevoProg(), store.get(claveProg(yo)) || {});
 const guardar = (yo, p) => store.set(claveProg(yo), p);
-const MENSAJES = ['¡Eres una máquina! 🎉', '¡Toda la familia te aplaude! 👏', '¡Nivel experto desbloqueado! 🧠'];
+// Frases navideñas: cada jugador ve 3 distintas (y cambian entre jugadores)
+const FRASES = [
+  'La Navidad no está debajo del árbol, sino alrededor de la mesa.',
+  'El mejor regalo no cabe en una caja: es el tiempo que compartimos.',
+  'Una luz pequeña basta para vencer la noche más larga.',
+  'Dar con el corazón vale más que dar con las manos llenas.',
+  'En Navidad, cada abrazo es un regalo que no necesita envoltura.',
+  'Lo que hace brillar una casa no son las luces, sino quienes la habitan.',
+  'La paz del mundo empieza con una sonrisa en casa.',
+  'Quien guarda la Navidad en el corazón, la tiene todo el año.',
+  'Los recuerdos son los adornos que nunca se guardan en la caja.',
+  'La familia es la estrella que guía nuestro camino.',
+  'No importa cuántos regalos haya, sino cuántos estemos juntos.',
+  'Un gesto amable es la tradición navideña más bonita.',
+  'La magia de la Navidad está en los pequeños detalles.',
+  'Cada Navidad es una nueva oportunidad para empezar de nuevo.',
+  'El amor es lo único que crece cuando se reparte.',
+];
+const frase = (yo, i) => FRASES[(NOMBRES.indexOf(yo) * 3 + i) % FRASES.length];
+// WhatsApp del anfitrión (config.php puede reemplazarlo)
+const WHATSAPP_ANFITRION = '51928504589';
 
 /* ---------- vistas ---------- */
 function pantalla(html) { app.innerHTML = SVG_GUIRNALDA + html; scrollTo(0, 0); }
@@ -89,7 +109,7 @@ function vistaInicio() {
   pantalla(`
     ${HERO}${bannerDemo()}
     <section class="card"><h2>¿Quién eres?</h2>
-      <p class="nota">Elige tu nombre. Supera tus 3 desafíos y descubrirás a quién le regalas.</p>
+      <p class="nota">Elige tu nombre. Supera tus 3 desafíos y descubrirás quién es tu amigo secreto.</p>
       <div class="nombres">${DATA.participantes.map(p => {
         const e = estado[p.nombre] || {};
         return `<button class="nombre" data-n="${esc(p.nombre)}" ${e.ocupado ? 'data-ocupado="1"' : ''}><span class="emo">${p.icono}</span>${esc(p.nombre)}${e.termino ? '<span class="est">✅</span>' : e.ocupado ? '<span class="est">🔒</span>' : ''}</button>`;
@@ -143,9 +163,9 @@ function vistaHub(yo) {
     <section class="card">
       <div class="juego-tit">${P.icono} Tu juego</div>
       <h2>${esc(P.juego)}</h2>
-      <p class="desc">${esc(P.desc)} Supera los 3 desafíos para descubrir a quién le regalas.</p>
+      <p class="desc">${esc(P.desc)} Supera los 3 desafíos para descubrir quién es tu amigo secreto.</p>
       ${rondas}
-      ${todas ? `<button class="btn oro" id="sortear">${p.asignado ? '🎁 Ver a quién le regalo' : '🎁 ¡Descubre a quién le regalas!'}</button>` : ''}
+      ${todas ? `<button class="btn oro" id="sortear">${p.asignado ? '🎁 Ver mi amigo secreto' : '🎁 ¡Descubre a tu amigo secreto!'}</button>` : ''}
     </section>
     <p class="enlace"><button class="link" id="cambiar">¿No eres ${esc(yo)}? Cambiar</button></p>`);
   $$('[data-ronda]').forEach(b => b.onclick = () => vistaReto(yo, +b.dataset.ronda));
@@ -190,14 +210,15 @@ function vistaRegalo(yo, i) {
   pantalla(`
     <section class="card centro">
       <h2>¡Superaste el desafío ${i + 1}!</h2>
-      <p class="desc">Toca el regalo</p>
+      <p class="desc" id="tocaRegalo">Toca el regalo 👇</p>
       <button class="regalo-btn" id="regalo" aria-label="Abrir regalo">${SVG_REGALO}</button>
-      <div class="pista-grande" id="pista">${MENSAJES[i]}<br><small style="font-size:17px;color:var(--gris)">${faltan ? `Te falta${faltan > 1 ? 'n' : ''} ${faltan} desafío${faltan > 1 ? 's' : ''} para descubrir a quién le regalas.` : '¡Ya puedes descubrir a quién le regalas!'}</small></div>
+      <div class="pista-grande frase" id="pista">“${frase(yo, i)}”<br><small style="font-size:16px;color:var(--gris);font-style:normal">${faltan ? `Te falta${faltan > 1 ? 'n' : ''} ${faltan} desafío${faltan > 1 ? 's' : ''} para descubrir a tu amigo secreto.` : '¡Ya puedes descubrir a tu amigo secreto!'}</small></div>
       <button class="btn ${faltan ? 'verde' : 'oro'}" id="seguir" hidden>${faltan ? 'Continuar' : '🎁 ¡Descubrir ahora!'}</button>
     </section>`);
   $('#regalo').onclick = () => {
     if ($('#regalo').classList.contains('abierto')) return;
     $('#regalo').classList.add('abierto'); sonido('bien'); fiesta(false);
+    $('#tocaRegalo').style.visibility = 'hidden';
     $('#pista').classList.add('ver'); $('#seguir').hidden = false;
   };
   $('#seguir').onclick = () => faltan ? vistaHub(yo) : vistaSorteo(yo);
@@ -215,7 +236,7 @@ function vistaSorteo(yo) {
     pantalla(`
       <section class="card centro">
         <p class="juego-tit">🎄 Sorteando… 🎄</p>
-        <h2>Te toca regalarle a…</h2>
+        <h2>Tu amigo secreto es…</h2>
         <div class="tragamonedas" id="slot">?</div>
         <p class="desc" id="sub">🥁🥁🥁</p>
       </section>`);
@@ -241,20 +262,18 @@ function vistaSorteo(yo) {
 
 function vistaResultado(yo, recien) {
   const p = prog(yo);
-  const num = (ESTADO?.whatsapp || '').replace(/\D/g, '');
-  const msg = `🎄 Amigo Secreto 2026: soy ${yo} y me tocó regalarle a ${p.asignado}.`;
+  const num = ((ESTADO && ESTADO.whatsapp) || WHATSAPP_ANFITRION).replace(/\D/g, '');
+  const msg = `🎄 Hola, soy ${yo}. Mi amigo secreto es ${p.asignado}.`;
   const wa = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
   pantalla(`
     <section class="card centro">
-      <p class="juego-tit">🎄 ${esc(yo)}, en este Amigo Secreto… 🎄</p>
-      <h2 style="margin-bottom:0">Te toca regalarle a</h2>
+      <p class="juego-tit">🎄 ¡Lo lograste, ${esc(yo)}! 🎄</p>
+      <h2 style="margin-bottom:0">Tu amigo secreto es</h2>
       <button class="final-nombre ${recien ? '' : 'oculto'}" id="nombreRes" style="background:none;border:0;cursor:pointer;width:100%">${esc(p.asignado)}</button>
       ${recien ? '' : '<p class="nota" id="tocaVer">Toca el nombre para verlo</p>'}
-      ${SVG_REGALO.replace('class="regalo-svg"', 'class="regalo-svg" style="width:100px;height:100px"')}
-      <p class="tiempo">${p.inicio && p.fin ? `⏱️ Tus desafíos: ${fmtTiempo(p.fin - p.inicio)}` : ''}</p>
-      <p class="desc"><b>🤫 Es secreto:</b> no se lo cuentes a nadie. Solo avísale al anfitrión.</p>
-      <a class="btn verde" style="display:block;text-decoration:none;margin-top:12px" href="${wa}" target="_blank" rel="noopener">📲 Avisar al anfitrión por WhatsApp</a>
-      <p class="nota">Si WhatsApp no abre, escríbele: “${esc(msg)}”</p>
+      <a class="btn verde wa" style="display:block;text-decoration:none;margin-top:8px" href="${wa}" target="_blank" rel="noopener">📲 Enviar por WhatsApp al anfitrión</a>
+      <p class="nota">Se enviará: “${esc(msg)}”</p>
+      <p class="desc" style="margin-top:12px">🤫 No se lo cuentes a nadie más.</p>
       <p style="margin-top:10px"><button class="btn sec" id="ocultar">🙈 Ocultar nombre</button></p>
     </section>`);
   $('#nombreRes').onclick = () => { $('#nombreRes').classList.toggle('oculto'); $('#tocaVer') && $('#tocaVer').remove(); };

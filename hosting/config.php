@@ -15,5 +15,5 @@ return [
 
     // Tu WhatsApp con código de país, sin + ni espacios (ej. '51987654321').
     // Vacío = WhatsApp le pedirá al jugador elegir el contacto.
-    'whatsapp_anfitrion' => '',
+    'whatsapp_anfitrion' => '51928504589',
 ];
