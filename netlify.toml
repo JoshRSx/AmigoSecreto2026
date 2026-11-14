@@ -1,0 +1,12 @@
+# Sitio estático: no hay build en Netlify, se publica la carpeta public/ tal cual.
+[build]
+  publish = "public"
+  command = ""
+
+# Siempre pedir la última versión (para que el nuevo config.js llegue a todos los celulares)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "no-cache"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
