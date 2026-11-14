@@ -277,17 +277,24 @@ const SVG_CANDADO = `<svg viewBox="0 0 90 100"><path class="arco" d="M24 46 V30 
 })();
 
 /* ---------- pistas (paquete del anfitrión) ---------- */
-// estado: 'real' (hay paquete), 'demo' (pistas de prueba) o 'espera' (aún no hay paquete)
+// estado: 'real' (hay pistas cargadas), 'demo' (pistas de prueba) o 'libre' (sin pistas: revelación en persona)
+// En 'real', quien no tenga pistas también juega en modo libre.
 function cargarPares() {
   const paq = PAQUETE || store.get('as_paquete_prueba') || '';
-  if (paq) { try { return { estado: 'real', pares: JSON.parse(dec(paq)).pares }; } catch (e) { console.warn('Paquete inválido', e); } }
+  if (paq) { try { return { estado: 'real', pares: JSON.parse(dec(paq)).pares || {} }; } catch (e) { console.warn('Paquete inválido', e); } }
   if (store.get('as_demo')) {
     const pares = {};
-    NOMBRES.forEach((n, i) => { const de = NOMBRES[(i + 5) % NOMBRES.length]; pares[n] = { de, pistas: ['(Prueba) Es alguien muy querido de la familia.', '(Prueba) Le encanta la comida navideña.', `(Prueba) Su nombre empieza con ${de[0]}.`] }; });
+    NOMBRES.forEach((n, i) => { const de = NOMBRES[(i + 5) % NOMBRES.length]; pares[n] = { de, pistas: pistasAuto(de) }; });
     return { estado: 'demo', pares };
   }
-  return { estado: 'espera', pares: {} };
+  return { estado: 'libre', pares: {} };
 }
+// Pistas automáticas a partir del nombre del regalador (si deja alguna en blanco)
+function pistasAuto(n) {
+  const L = [...n.normalize('NFC')];
+  return [`Su nombre tiene ${L.length} letras.`, `Su nombre termina en «${L[L.length - 1].toUpperCase()}».`, `Su nombre empieza con «${L[0].toUpperCase()}».`];
+}
+const MENSAJES_LIBRES = ['¡Eres una máquina! 🎉 Sigue así.', '¡Toda la familia te aplaude! 👏', '¡Nivel experto desbloqueado! 🧠'];
 let ESTADO, PARES, DEMO;
 function recargar() { ({ estado: ESTADO, pares: PARES } = cargarPares()); DEMO = ESTADO === 'demo'; }
 recargar();
@@ -318,17 +325,6 @@ function vistaInicio() {
   });
 }
 
-function vistaEspera() {
-  pantalla(`
-    <header class="hero">${SVG_ARBOL}<h1>Amigo Secreto</h1><p class="sub">Familiar · Navidad 2026</p></header>
-    <section class="card centro">
-      <h2>¡Ya casi empieza!</h2>
-      <p class="desc">El juego se abre el día del evento. Mientras tanto, si ya sabes a quién le regalas, escribe tus pistas.</p>
-      <p style="margin:16px 0 0"><a class="btn verde" style="display:block;text-decoration:none" href="#pistas">✍️ Escribir mis pistas</a></p>
-    </section>
-    <p class="enlace"><a href="#demo">🧪 Probar una demo</a></p>`);
-}
-
 function vistaCuenta() {
   const pintar = () => {
     if (!$('#reloj')) return clearInterval(vistaCuenta.iv);
@@ -355,12 +351,13 @@ function vistaHub(yo) {
     const hecha = p.rondas[i], abierta = i === 0 || p.rondas[i - 1];
     return `<div class="ronda ${hecha ? 'hecha' : abierta ? 'abierta' : 'bloq'}">
       <div class="ronda-num">${hecha ? '✅' : abierta ? '🎁' : '🔒'}</div>
-      <div class="ronda-txt"><b>Ronda ${i + 1}</b><small>${TIPOS_PISTA[i]}</small>${hecha ? `<div class="pista">“${esc(par?.pistas?.[i] || 'Pista pendiente')}”</div>` : ''}</div>
+      <div class="ronda-txt"><b>Ronda ${i + 1}</b><small>${par ? TIPOS_PISTA[i] : 'Desafío ' + (i + 1)}</small>${hecha ? `<div class="pista">${par ? `“${esc(par.pistas[i])}”` : '🎉 ¡Superada!'}</div>` : ''}</div>
       ${!hecha && abierta ? `<button class="btn chico" data-ronda="${i}">Jugar</button>` : ''}</div>`;
   }).join('');
   const todas = p.rondas.every(Boolean);
   let final = '';
-  if (todas) {
+  if (todas && !par) final = `<button class="btn oro" id="verlibre">🎁 ¡Terminé! Ver revelación</button>`;
+  else if (todas) {
     if (p.acerto) final = `<button class="btn oro" id="verfinal">🎉 Ver mi resultado</button>`;
     else if (p.intentos > 0) final = `<button class="btn oro" id="adivinar">🎁 ¡Descubre a tu amigo secreto!</button>`;
     else final = `<div class="banner">Se acabaron tus intentos 😅 Espera la revelación del anfitrión.</div>`;
@@ -368,11 +365,10 @@ function vistaHub(yo) {
   pantalla(`
     <div class="saludo"><h1>¡Hola, ${esc(yo)}!</h1></div>
     ${bannerDemo()}
-    ${!par ? `<div class="banner">Tus pistas aún no están cargadas. Avísale al anfitrión.</div>` : ''}
     <section class="card">
       <div class="juego-tit">${P.icono} Tu juego</div>
       <h2>${esc(P.juego)}</h2>
-      <p class="desc">${esc(P.desc)} Supera cada ronda para ganar una pista sobre quién es tu amigo secreto.</p>
+      <p class="desc">${esc(P.desc)} ${par ? 'Supera cada ronda para ganar una pista sobre quién es tu amigo secreto.' : 'Supera los 3 desafíos lo más rápido que puedas. Al final, tu amigo secreto se revela en persona.'}</p>
       ${rondas}
       ${final}
     </section>
@@ -380,6 +376,7 @@ function vistaHub(yo) {
   $$('[data-ronda]').forEach(b => b.onclick = () => vistaReto(yo, +b.dataset.ronda));
   $('#adivinar') && ($('#adivinar').onclick = () => vistaAdivinar(yo));
   $('#verfinal') && ($('#verfinal').onclick = () => vistaFinal(yo));
+  $('#verlibre') && ($('#verlibre').onclick = () => vistaFinalLibre(yo));
   $('#cambiar').onclick = async () => {
     const i = await modal(`<h3>¿Cambiar de jugador?</h3><p>Tu progreso se guarda en este celular.</p>`, [{ t: 'Cancelar', cls: 'sec' }, { t: 'Cambiar' }]);
     if (i === 1) { store.del('as_yo'); vistaInicio(); }
@@ -402,20 +399,23 @@ function vistaReto(yo, i) {
 }
 
 function completarRonda(yo, i) {
-  const p = prog(yo); p.rondas[i] = true; guardar(yo, p);
+  const p = prog(yo); p.rondas[i] = true;
+  if (!PARES[yo] && p.rondas.every(Boolean) && !p.fin) p.fin = Date.now();
+  guardar(yo, p);
   sonido('bien'); fiesta(false);
   setTimeout(() => vistaRegalo(yo, i), 700);
 }
 
 function vistaRegalo(yo, i) {
-  const pista = PARES[yo]?.pistas?.[i] || 'Tu pista aún no está cargada. Pregúntale al anfitrión.';
+  const par = PARES[yo];
+  const pista = par ? par.pistas[i] : MENSAJES_LIBRES[i];
   pantalla(`
     <section class="card centro">
       <h2>¡Superaste la ronda ${i + 1}!</h2>
-      <p class="desc">Toca el regalo para abrir tu pista</p>
+      <p class="desc">Toca el regalo para abrir${par ? ' tu pista' : 'lo'}</p>
       <button class="regalo-btn" id="regalo" aria-label="Abrir regalo">${SVG_REGALO}</button>
-      <div class="nota">${TIPOS_PISTA[i]}</div>
-      <div class="pista-grande" id="pista">“${esc(pista)}”</div>
+      <div class="nota">${par ? TIPOS_PISTA[i] : ''}</div>
+      <div class="pista-grande" id="pista">${par ? `“${esc(pista)}”` : esc(pista)}</div>
       <button class="btn verde" id="seguir" hidden>Continuar</button>
     </section>`);
   $('#regalo').onclick = () => {
@@ -463,6 +463,22 @@ function vistaFinal(yo) {
       ${SVG_REGALO.replace('class="regalo-svg"', 'class="regalo-svg" style="width:110px;height:110px"')}
       <p class="tiempo">⏱️ Tiempo: ${fmtTiempo((p.fin || Date.now()) - p.inicio)}</p>
       <p class="desc">¡Muestra esta pantalla a todos y ve por tu regalo! 🎁</p>
+      <button class="btn verde" id="otra">🎉 Más confeti</button>
+    </section>`);
+  sonido('final'); fiesta(true);
+  $('#otra').onclick = () => { sonido('final'); fiesta(true); };
+}
+
+function vistaFinalLibre(yo) {
+  const p = prog(yo);
+  pantalla(`
+    <section class="card centro">
+      <p class="juego-tit">🎄 ¡Completaste los 3 desafíos, ${esc(yo)}! 🎄</p>
+      <h2>¡Hora de la revelación!</h2>
+      ${SVG_REGALO.replace('class="regalo-svg"', 'class="regalo-svg" style="width:120px;height:120px"')}
+      <p class="tiempo">⏱️ Tiempo: ${fmtTiempo((p.fin || Date.now()) - p.inicio)}</p>
+      <div class="final-nombre" style="font-size:40px">¿Quién crees que es?</div>
+      <p class="desc">Dilo en voz alta frente a todos… ¡y que tu amigo secreto se revele! 🎁</p>
       <button class="btn verde" id="otra">🎉 Más confeti</button>
     </section>`);
   sonido('final'); fiesta(true);
@@ -672,12 +688,12 @@ function vistaEscribir() {
     <div class="topbar"><a href="#juego" style="color:#fff;font-weight:800">← Inicio</a><span>Pistas</span></div>
     <section class="card">
       <h2>Escribe tus pistas</h2>
-      <p class="desc">Tú eres el <b>regalador</b>. Escribe 3 pistas <b>sobre ti</b> para que tu amigo secreto te descubra. Nadie más las verá: se convierten en un código que envías al anfitrión.</p>
+      <p class="desc">Tú eres el <b>regalador</b>. Escribe 3 pistas <b>sobre ti</b> para que tu amigo secreto te descubra. Nadie más las verá: se convierten en un código que envías al anfitrión.</p><p class="nota">Las pistas son opcionales: si dejas alguna en blanco, la app la crea sola con tu nombre (cuántas letras tiene, en qué letra termina, con cuál empieza).</p>
       <div class="campo"><label>1. ¿Quién eres tú?</label><select id="de">${opts()}</select></div>
       <div class="campo"><label>2. ¿A quién le regalas?</label><select id="para">${opts()}</select></div>
-      <div class="campo"><label>Pista 1 · Característica general</label><textarea id="p1" maxlength="160" placeholder="Ej.: Es una de las personas más altas de la familia."></textarea></div>
-      <div class="campo"><label>Pista 2 · Un gusto o afición</label><textarea id="p2" maxlength="160" placeholder="Ej.: Le encanta cocinar los domingos."></textarea></div>
-      <div class="campo"><label>Pista 3 · Algo más específico</label><textarea id="p3" maxlength="160" placeholder="Ej.: Siempre llega con su taza de café."></textarea><small>Ojo: la inicial ayuda poco con la J y la G (hay varios Joshua, Josefina, Juliett, Jhency, Gabriel, Guillermo).</small></div>
+      <div class="campo"><label>Pista 1 · Característica general <small style="display:inline">(opcional)</small></label><textarea id="p1" maxlength="160" placeholder="Ej.: Es una de las personas más altas de la familia."></textarea></div>
+      <div class="campo"><label>Pista 2 · Un gusto o afición <small style="display:inline">(opcional)</small></label><textarea id="p2" maxlength="160" placeholder="Ej.: Le encanta cocinar los domingos."></textarea></div>
+      <div class="campo"><label>Pista 3 · Algo más específico <small style="display:inline">(opcional)</small></label><textarea id="p3" maxlength="160" placeholder="Ej.: Siempre llega con su taza de café."></textarea><small>Ojo: la inicial ayuda poco con la J y la G (hay varios Joshua, Josefina, Juliett, Jhency, Gabriel, Guillermo).</small></div>
       <button class="btn verde" id="generar">Generar mi código</button>
       <div id="resultado"></div>
     </section>`);
@@ -685,7 +701,7 @@ function vistaEscribir() {
   $('#generar').onclick = () => {
     const de = $('#de').value, para = $('#para').value, p = ['p1', 'p2', 'p3'].map(id => $('#' + id).value.trim());
     if (!de || !para) return toast('Elige tu nombre y a quién le regalas');
-    if (p.some(x => x.length < 4)) return toast('Escribe las 3 pistas');
+    const auto = pistasAuto(de); p.forEach((x, i) => { if (x.length < 3) p[i] = auto[i]; });
     const codigo = 'AS1-' + enc(JSON.stringify({ de, para, p }));
     const wa = 'https://wa.me/?text=' + encodeURIComponent('🎄 Mi código de pistas del Amigo Secreto:\n' + codigo);
     $('#resultado').innerHTML = `<div class="campo" style="margin-top:16px"><label>Tu código ✅</label><textarea class="salida" id="cod" readonly>${codigo}</textarea></div>
@@ -705,7 +721,7 @@ function vistaOrganizador() {
       <div class="campo"><textarea id="codigos" class="salida" placeholder="AS1-…"></textarea><small>Se guardan en este celular para que no los pierdas.</small></div>
       <div id="estado"></div>
       <div class="campo"><label>Hora de inicio (opcional)</label><input type="datetime-local" id="hora" style="font:800 17px 'Nunito',system-ui,sans-serif;padding:12px;border-radius:14px;border:2px solid #ead9bf;width:100%"><small>Antes de esa hora, los jugadores ven una cuenta regresiva. Vacío = el juego abre apenas subas el archivo.</small></div>
-      <button class="btn verde" id="gen" disabled>Generar config.js</button>
+      <button class="btn verde" id="gen">Generar config.js</button>
       <div id="out"></div>
     </section>
     <section class="card">
@@ -722,15 +738,14 @@ function vistaOrganizador() {
     Object.entries(porDe).forEach(([n, k]) => k > 1 && errores.push(`${n} envió ${k} códigos (se usará el último).`));
     Object.entries(porPara).forEach(([n, k]) => k > 1 && errores.push(`Dos personas dicen regalarle a ${n}. Revisen el sorteo.`));
     $('#estado').innerHTML = `<div class="estado"><span class="h">Nombre</span><span class="h">Envió</span><span class="h">Tiene pistas</span>${NOMBRES.map(n => `<span>${esc(n)}</span><span>${porDe[n] ? '✅' : '⏳'}</span><span>${porPara[n] ? '✅' : '⏳'}</span>`).join('')}</div>
-      <p class="nota">${Object.keys(porPara).length} de ${NOMBRES.length} listos</p>${[...new Set(errores)].map(e => `<div class="err-lista">⚠️ ${esc(e)}</div>`).join('')}`;
-    $('#gen').disabled = !entradas.length;
+      <p class="nota">${Object.keys(porPara).length} de ${NOMBRES.length} con pistas · quien no tenga, juega igual y su revelación es en persona.</p>${[...new Set(errores)].map(e => `<div class="err-lista">⚠️ ${esc(e)}</div>`).join('')}`;
   };
   $('#codigos').value = store.get('as_org_codigos') || '';
   $('#codigos').oninput = () => { store.set('as_org_codigos', $('#codigos').value); analizar(); };
   analizar();
   $('#gen').onclick = () => {
     const pares = {}; entradas.forEach(o => pares[o.para] = { de: o.de, pistas: o.p });
-    const paq = enc(JSON.stringify({ pares }));
+    const paq = entradas.length ? enc(JSON.stringify({ pares })) : '';
     const hv = $('#hora').value, iso = hv ? new Date(hv).toISOString() : '';
     const texto = `// Generado por #organizador el ${new Date().toLocaleString('es-PE')}\n// Pistas para ${Object.keys(pares).length} de ${NOMBRES.length} participantes.\nwindow.AMIGO_CONFIG = {\n  paquete: "${paq}",\n  horaInicio: "${iso}"\n};\n`;
     $('#out').innerHTML = `<div class="campo" style="margin-top:16px"><label>Tu nuevo config.js</label><textarea class="salida" id="paq" readonly>${esc(texto)}</textarea><small>Reemplaza el contenido de <b>public/config.js</b> en GitHub con esto. Netlify lo publica solo en ~1 minuto.</small></div>
@@ -756,8 +771,7 @@ function ruta() {
   if (h === 'organizador') return vistaOrganizador();
   if (h === 'pistas') return vistaEscribir();
   if (h === 'demo' && ESTADO !== 'real') { store.set('as_demo', true); recargar(); }
-  if (ESTADO === 'espera') return vistaEspera();
-  if (ESTADO === 'real' && HORA_INICIO && HORA_INICIO > Date.now() && !store.get('as_paquete_prueba')) return vistaCuenta();
+  if (ESTADO !== 'demo' && HORA_INICIO && HORA_INICIO > Date.now() && !store.get('as_paquete_prueba')) return vistaCuenta();
   const yo = store.get('as_yo');
   if (yo && NOMBRES.includes(yo)) return vistaHub(yo);
   vistaInicio();

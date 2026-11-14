@@ -39,7 +39,7 @@ with sync_playwright() as p:
     ctx=b.new_context(viewport={'width':390,'height':844}, device_scale_factor=2, is_mobile=True, has_touch=True)
     page=ctx.new_page(); page.on('pageerror', lambda e: errs.append(str(e)))
     page.goto(URL); page.wait_for_timeout(600); page.screenshot(path='test/00_espera.png', full_page=True)
-    print('espera visible:', page.is_visible('text=Ya casi empieza'))
+    print('libre: inicio con nombres:', page.is_visible('text=¿Quién eres?'), '| estado', page.evaluate('ESTADO'))
     page.goto(URL+'#demo'); page.wait_for_timeout(600); page.screenshot(path='test/01_inicio.png', full_page=True)
     names=[x['nombre'] for x in content['participantes']]
     for idx,P in enumerate(content['participantes']):

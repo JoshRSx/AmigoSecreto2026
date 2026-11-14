@@ -26,12 +26,21 @@ netlify.toml
 
 | Cuándo | Quién | Qué |
 |---|---|---|
-| Después del sorteo | Cada regalador | Abre `https://TU-SITIO.netlify.app/#pistas`, escribe 3 pistas sobre sí mismo y envía el código al anfitrión |
+| Después del sorteo | Cada regalador | (Opcional) Abre `https://TU-SITIO.netlify.app/#pistas`, marca a quién le regala, escribe hasta 3 pistas sobre sí mismo y envía el código al anfitrión |
 | Cuando lleguen todos | Anfitrión | Abre `/#organizador`, pega los códigos, (opcional) pone la hora de inicio y toca **Generar config.js** |
 | Igual | Anfitrión | En GitHub edita `public/config.js`, reemplaza todo con lo generado y haz commit. Netlify publica en ~1 min |
 | Domingo | Todos | Abren el link, eligen su nombre y juegan |
 
-- Sin `paquete` en `config.js`, la app muestra "¡Ya casi empieza!" (nadie juega con pistas falsas). `/#demo` permite probar con pistas de prueba; ese progreso no se mezcla con el juego real.
+### Funciona con o sin pistas
+
+| Situación | Qué pasa |
+|---|---|
+| Nadie envió código (`paquete` vacío) | Todos juegan sus 3 rondas; cada regalo da un mensaje festivo y al final la revelación es **en persona** |
+| Algunos enviaron código | Quien tiene pistas adivina en la app; el resto juega igual y se revela en persona |
+| Alguien dejó pistas en blanco | La app las crea con su nombre: cuántas letras tiene, en qué letra termina, con cuál empieza |
+
+- `horaInicio` en `config.js` muestra una cuenta regresiva hasta esa hora (sirve también sin pistas, para que nadie juegue antes).
+- `/#demo` prueba el juego con pistas de prueba; ese progreso no se mezcla con el real.
 - `/#organizador` nunca muestra pistas ni parejas, solo quién falta.
 
 ## Cambiar acertijos
