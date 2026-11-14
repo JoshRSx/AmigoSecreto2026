@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amigo Secreto Familiar 🎄</title>
+<meta name="description" content="Juegos, pistas y sorpresas: descubre quién es tu amigo secreto.">
+<meta name="theme-color" content="#0b3d2a">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js"></script>
+<style>
+:root{
+  --rojo:#c8102e; --rojo2:#8e0c20; --verde:#0f5132; --verde2:#1e7d4f;
+  --oro:#f4c430; --oro2:#d9a400; --crema:#fff8ec; --tinta:#2b1d14; --gris:#7a6a5c;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{
+  font-family:'Nunito',system-ui,sans-serif;color:var(--tinta);
+  background:radial-gradient(120% 80% at 50% 0%,#14603f 0%,#0b3d2a 45%,#06261a 100%) fixed;
+  min-height:100vh;padding-bottom:40px;
+}
+#nieve{position:fixed;inset:0;pointer-events:none;z-index:0}
+#app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:14px 14px 30px}
+.guirnalda{display:block;width:100%;height:46px;margin-bottom:4px}
+h1,h2,.fest{font-family:'Mountains of Christmas',Georgia,serif}
+.hero{text-align:center;color:#fff;padding:4px 0 10px}
+.hero svg{width:120px;height:120px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+.hero h1{font-size:46px;line-height:1;margin:6px 0 0;color:var(--oro);text-shadow:0 3px 0 var(--rojo2),0 6px 14px rgba(0,0,0,.4)}
+.hero .sub{margin:4px 0 0;font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:13px;opacity:.9}
+.card{
+  background:var(--crema);border-radius:20px;padding:18px 16px;margin:14px 0;
+  box-shadow:0 10px 26px rgba(0,0,0,.28);position:relative;overflow:hidden;
+}
+.card::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;
+  background:repeating-linear-gradient(45deg,var(--rojo) 0 12px,#fff 12px 24px)}
+.card h2{font-size:30px;margin:6px 0 10px;color:var(--rojo);line-height:1.05}
+.card h2.peq{font-family:'Nunito',system-ui,sans-serif;font-size:19px;font-weight:800;color:var(--tinta);line-height:1.35}
+.banner{background:var(--oro);color:var(--tinta);border-radius:12px;padding:10px 12px;font-weight:800;font-size:14px;text-align:center;margin:10px 0}
+.nombres{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nombre{
+  font:800 17px 'Nunito',system-ui,sans-serif;padding:14px 10px;border-radius:14px;border:2px solid #ead9bf;
+  background:#fff;color:var(--tinta);display:flex;align-items:center;gap:8px;cursor:pointer;
+}
+.nombre:active,.nombre.sel{border-color:var(--rojo);background:#ffecec}
+.nombre .emo{font-size:22px}
+.btn{
+  font:900 17px 'Nunito',system-ui,sans-serif;border:0;border-radius:14px;padding:14px 18px;cursor:pointer;
+  background:var(--rojo);color:#fff;box-shadow:0 4px 0 var(--rojo2);width:100%;
+  transition:transform .08s;
+}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--rojo2)}
+.btn.verde{background:var(--verde2);box-shadow:0 4px 0 var(--verde)}
+.btn.oro{background:var(--oro);color:var(--tinta);box-shadow:0 4px 0 var(--oro2)}
+.btn.sec{background:#fff;color:var(--tinta);border:2px solid #ead9bf;box-shadow:none}
+.btn.chico{width:auto;padding:10px 14px;font-size:15px}
+.btn:disabled{opacity:.45}
+.enlace{text-align:center;margin:18px 0}
+.enlace a,.link{color:#fff;font-weight:800;text-decoration:underline;background:none;border:0;font-size:15px;cursor:pointer;font-family:inherit}
+.link.osc{color:var(--gris)}
+.topbar{display:flex;justify-content:space-between;align-items:center;color:#fff;font-weight:800}
+.topbar button{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:10px;padding:8px 12px;font:800 15px 'Nunito',system-ui,sans-serif;cursor:pointer}
+.saludo{color:#fff;text-align:center;margin:6px 0 0}
+.saludo h1{font-size:40px;margin:0;color:var(--oro);text-shadow:0 3px 0 var(--rojo2)}
+.juego-tit{font-weight:900;color:var(--verde2);font-size:15px;text-transform:uppercase;letter-spacing:.05em}
+.desc{margin:4px 0 0;color:var(--gris)}
+.ronda{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;margin:10px 0;background:#fff;border:2px solid #f0e2cb}
+.ronda.bloq{opacity:.55}
+.ronda.hecha{border-color:#bfe3cc;background:#f2fbf5}
+.ronda-num{font-size:30px;width:40px;text-align:center}
+.ronda-txt{flex:1}
+.ronda-txt small{display:block;color:var(--gris);font-weight:700}
+.pista{margin-top:6px;font-weight:800;color:var(--verde);font-size:16px}
+.reto h2{font-family:'Nunito',system-ui,sans-serif;font-size:20px;font-weight:800;color:var(--tinta);line-height:1.35}
+.emojis{font-size:48px;text-align:center;margin:14px 0;letter-spacing:4px}
+.letras,.codigo{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:14px 0}
+.letras span{width:40px;height:46px;display:grid;place-items:center;background:var(--verde2);color:#fff;font:900 22px 'Nunito',system-ui,sans-serif;border-radius:10px;box-shadow:0 3px 0 var(--verde)}
+.codigo span{font-size:36px}
+.codigo.txt{font:900 22px 'Nunito',system-ui,sans-serif;color:var(--rojo);letter-spacing:.05em}
+.serie{text-align:center;font:900 28px 'Nunito',system-ui,sans-serif;color:var(--verde2);margin:16px 0}
+.tabla{border-collapse:collapse;margin:10px auto;background:#fff;border-radius:12px;overflow:hidden}
+.tabla th,.tabla td{border:1px solid #ead9bf;padding:6px 12px;text-align:center;font-size:17px}
+.tabla th{background:#fbefd9}
+.tabla .emo{font-size:24px}
+.tabla.coord td{font:900 20px 'Nunito',system-ui,sans-serif;width:42px;height:42px}
+.ops{font:800 20px 'Nunito',system-ui,sans-serif;padding-left:26px}
+.ops li{margin:6px 0}
+.hueco{display:inline-block;min-width:28px;border-bottom:3px dotted var(--rojo);text-align:center;color:var(--rojo)}
+.abc summary{cursor:pointer;color:var(--verde2);font-weight:800;margin:6px 0}
+.abc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:13px}
+.abc-grid span{background:#fff;border-radius:6px;padding:3px;text-align:center}
+.abc-grid b{display:block;font-size:15px}
+.lista{padding-left:20px;font-size:17px;line-height:1.5}
+.nota{color:var(--gris);font-size:14px;font-weight:700;margin:6px 0}
+.resp{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.resp input,textarea,select{
+  font:800 19px 'Nunito',system-ui,sans-serif;padding:14px;border-radius:14px;border:2px solid #ead9bf;background:#fff;width:100%;color:var(--tinta)
+}
+textarea{font-size:16px;font-weight:700;min-height:70px;resize:vertical}
+.resp input:focus,textarea:focus,select:focus{outline:none;border-color:var(--verde2)}
+.opciones{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.opcion{font:900 18px 'Nunito',system-ui,sans-serif;padding:16px 10px;border-radius:14px;border:2px solid #ead9bf;background:#fff;cursor:pointer;color:var(--tinta)}
+.opcion.mal{background:#ffe1e1;border-color:#f3a3a3;opacity:.6}
+.opcion.bien{background:#d9f3e2;border-color:var(--verde2)}
+.ayuda-btn{margin-top:14px;background:none;border:2px dashed #e0c99f;border-radius:12px;padding:10px;width:100%;font:800 15px 'Nunito',system-ui,sans-serif;color:var(--gris);cursor:pointer}
+.ayuda{background:#fff6d6;border-radius:12px;padding:10px 12px;font-weight:700;margin:10px 0 0}
+.sacudir{animation:sacudir .4s}
+@keyframes sacudir{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--tinta);color:#fff;padding:12px 18px;border-radius:14px;font-weight:800;z-index:20;transition:transform .25s;max-width:90vw;text-align:center}
+#toast.ver{transform:translateX(-50%) translateY(0)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:30;padding:20px}
+#modal[hidden]{display:none}
+.modal-caja{background:var(--crema);border-radius:20px;padding:20px;max-width:380px;width:100%;text-align:center;font-size:17px}
+.modal-caja h3{font-family:'Mountains of Christmas',Georgia,serif;font-size:30px;color:var(--rojo);margin:0 0 8px}
+.modal-btns{display:flex;gap:10px;margin-top:16px}
+/* Sopa */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.chip{background:#fff;border:2px solid #ead9bf;border-radius:999px;padding:4px 12px;font-weight:900;font-size:14px}
+.chip.ok{background:var(--verde2);color:#fff;border-color:var(--verde2);text-decoration:line-through}
+.sopa{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:3px;touch-action:manipulation}
+.celda{aspect-ratio:1;border:0;border-radius:7px;background:#fff;font:900 clamp(13px,4.2vw,19px) 'Nunito',system-ui,sans-serif;color:var(--tinta);padding:0;cursor:pointer}
+.celda.sel{background:var(--oro)}
+.celda.ok{background:#bfe8cf;color:var(--verde)}
+.celda.err{background:#ffc9c9}
+/* Memoria */
+.memoria{display:grid;gap:10px;margin-top:12px}
+.carta{aspect-ratio:3/4;border:0;border-radius:14px;cursor:pointer;font-size:40px;position:relative;perspective:600px;background:none;padding:0}
+.carta .cara{position:absolute;inset:0;border-radius:14px;display:grid;place-items:center;backface-visibility:hidden;transition:transform .35s}
+.carta .frente{background:#fff;border:3px solid var(--oro);transform:rotateY(180deg)}
+.carta .dorso{background:repeating-linear-gradient(45deg,var(--rojo) 0 10px,var(--rojo2) 10px 20px);border:3px solid var(--oro);font-size:28px}
+.carta.vuelta .frente{transform:rotateY(0)}
+.carta.vuelta .dorso{transform:rotateY(-180deg)}
+.carta.par .frente{background:#d9f3e2;border-color:var(--verde2)}
+.cuenta{text-align:center;font:900 22px 'Nunito',system-ui,sans-serif;color:var(--rojo);min-height:30px}
+/* Diferencias */
+.escena{width:100%;display:block;border-radius:14px;border:3px solid var(--oro)}
+.dif-lbl{font-weight:900;font-size:14px;color:var(--gris);margin:10px 0 4px;display:flex;justify-content:space-between}
+.dif-zona{position:relative}
+/* Candado */
+.candado{display:flex;justify-content:center;margin:6px 0}
+.candado svg{width:90px;height:100px}
+.candado .arco{transition:transform .5s}
+.candado.abierto .arco{transform:translateY(-14px)}
+.diales{display:flex;justify-content:center;gap:10px;margin:12px 0}
+.dial{display:flex;flex-direction:column;align-items:center;gap:4px}
+.dial button{width:56px;height:38px;border:0;border-radius:10px;background:var(--verde2);color:#fff;font-size:18px;cursor:pointer}
+.dial span{width:56px;height:62px;display:grid;place-items:center;background:#fff;border:3px solid var(--oro);border-radius:12px;font:900 34px 'Nunito',system-ui,sans-serif}
+/* Ruleta */
+.ruleta-box{position:relative;width:260px;height:260px;margin:10px auto}
+.ruleta-box svg{width:100%;height:100%;transition:transform 4s cubic-bezier(.15,.85,.2,1)}
+.puntero{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:28px solid var(--oro);filter:drop-shadow(0 2px 2px rgba(0,0,0,.4));z-index:2}
+.cat{text-align:center;font:900 20px 'Nunito',system-ui,sans-serif;color:var(--verde2);margin:6px 0}
+/* Regalo */
+.regalo-btn{background:none;border:0;cursor:pointer;display:block;margin:10px auto;padding:0}
+.regalo-svg{width:170px;height:170px;overflow:visible}
+.regalo-svg .tapa{transition:transform .6s cubic-bezier(.3,1.6,.5,1);transform-box:fill-box;transform-origin:20% 100%}
+.regalo-btn.abierto .tapa{transform:translate(-14px,-46px) rotate(-24deg)}
+.regalo-btn:not(.abierto) .regalo-svg{animation:latido 1.4s infinite}
+@keyframes latido{0%,100%{transform:scale(1)}50%{transform:scale(1.06) rotate(-2deg)}}
+.pista-grande{font:900 24px 'Nunito',system-ui,sans-serif;color:var(--verde);text-align:center;margin:10px 0;opacity:0;transform:translateY(10px);transition:all .5s .3s}
+.pista-grande.ver{opacity:1;transform:none}
+.centro{text-align:center}
+.final-nombre{font-family:'Mountains of Christmas',Georgia,serif;font-size:64px;color:var(--rojo);line-height:1;margin:10px 0;text-shadow:0 3px 0 var(--oro)}
+.tiempo{font:900 18px 'Nunito',system-ui,sans-serif;color:var(--verde2)}
+.estado{display:grid;grid-template-columns:1fr auto auto;gap:4px 10px;font-weight:700;font-size:15px;align-items:center}
+.estado .h{font-weight:900;color:var(--gris);font-size:12px;text-transform:uppercase}
+.err-lista{color:var(--rojo);font-weight:800;font-size:14px}
+.campo{margin:12px 0}
+.campo label{display:block;font-weight:900;margin-bottom:6px}
+.campo small{display:block;color:var(--gris);font-weight:700;margin-top:4px}
+.salida{font:700 12px monospace;min-height:110px;word-break:break-all}
+.fila{display:flex;gap:10px;margin-top:10px}
+.nombre[data-ocupado]{opacity:.6}
+.nombre .est{margin-left:auto;font-size:15px}
+.tragamonedas{font-family:'Mountains of Christmas',Georgia,serif;font-size:52px;color:var(--rojo);height:84px;display:grid;place-items:center;border:4px solid var(--oro);border-radius:18px;background:#fff;margin:14px 0;overflow:hidden;box-shadow:inset 0 6px 10px rgba(0,0,0,.08)}
+.final-nombre.oculto{filter:blur(14px);user-select:none}
+.final-nombre{transition:filter .3s}
+.tabla-admin{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+.tabla-admin th{text-align:left;color:var(--gris);font-size:12px;text-transform:uppercase;padding:6px 4px;border-bottom:2px solid #ead9bf}
+.tabla-admin td{padding:8px 4px;border-bottom:1px solid #f0e2cb;vertical-align:middle}
+.tabla-admin small{color:var(--gris)}
+.tabla-admin .link{font-size:22px;text-decoration:none}
+.fila .btn.chico{flex:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="nieve"></canvas>
+<div id="app"></div>
+<div id="toast"></div>
+<div id="modal" hidden></div>
+<script>
+const DATA = {"intentos":2,"participantes":[{"nombre":"Joshua","icono":"😀","juego":"El desafío de los emojis","desc":"Descifra qué palabra representan los emojis.","niveles":[{"tipo":"texto","enunciado":"¿Qué palabra forman estos emojis?","visual":"<div class=\"emojis\">☀️ + 🌻</div>","ayuda":"Es una flor que siempre mira hacia el sol.","r":["CQgECBcOCA==","CQgECBcOCEhB"]},{"tipo":"texto","enunciado":"¿Qué parte de la casa es?","visual":"<div class=\"emojis\">🏠 + 🔥 + 🧦</div>","ayuda":"Por aquí baja Papá Noel… o eso dicen.","r":["DQkfBAEPAUw="]},{"tipo":"texto","enunciado":"¿Qué noche especial es?","visual":"<div class=\"emojis\">🌃 + 👍</div>","ayuda":"La noche del 24 de diciembre.","r":["AA4VAQEDEUhcUQ=="]}]},{"nombre":"Estephany","icono":"🎨","juego":"El código de colores","desc":"Cada color es una letra. Usa la clave para leer el mensaje.","niveles":[{"tipo":"texto","enunciado":"Descubre la palabra oculta","visual":"<table class=\"tabla\"><tr><th>Color</th><th>Letra</th></tr><tr><td class=\"emo\">🟡</td><td><b>V</b></td></tr><tr><td class=\"emo\">🔴</td><td><b>N</b></td></tr><tr><td class=\"emo\">🟢</td><td><b>E</b></td></tr><tr><td class=\"emo\">🔵</td><td><b>I</b></td></tr><tr><td class=\"emo\">🟣</td><td><b>S</b></td></tr></table><div class=\"codigo\"><span>🔴</span><span>🔵</span><span>🟢</span><span>🟡</span><span>🟢</span></div>","ayuda":"Cae del cielo cuando hace mucho frío.","r":["AAgTHwE="]},{"tipo":"texto","enunciado":"Descubre la palabra oculta","visual":"<table class=\"tabla\"><tr><th>Color</th><th>Letra</th></tr><tr><td class=\"emo\">🟠</td><td><b>O</b></td></tr><tr><td class=\"emo\">🔴</td><td><b>R</b></td></tr><tr><td class=\"emo\">🟣</td><td><b>L</b></td></tr><tr><td class=\"emo\">🔵</td><td><b>E</b></td></tr><tr><td class=\"emo\">🟤</td><td><b>T</b></td></tr><tr><td class=\"emo\">🟢</td><td><b>G</b></td></tr><tr><td class=\"emo\">🟡</td><td><b>A</b></td></tr></table><div class=\"codigo\"><span>🔴</span><span>🔵</span><span>🟢</span><span>🟡</span><span>🟣</span><span>🟠</span></div>","ayuda":"Lo que todos esperan recibir hoy.","r":["HAQRCAgO"]},{"tipo":"texto","enunciado":"Descubre la palabra oculta","visual":"<table class=\"tabla\"><tr><th>Color</th><th>Letra</th></tr><tr><td class=\"emo\">🟠</td><td><b>A</b></td></tr><tr><td class=\"emo\">🟣</td><td><b>L</b></td></tr><tr><td class=\"emo\">🔴</td><td><b>E</b></td></tr><tr><td class=\"emo\">⚫</td><td><b>N</b></td></tr><tr><td class=\"emo\">🟡</td><td><b>R</b></td></tr><tr><td class=\"emo\">🔵</td><td><b>S</b></td></tr><tr><td class=\"emo\">🟢</td><td><b>T</b></td></tr></table><div class=\"codigo\"><span>🔴</span><span>🔵</span><span>🟢</span><span>🟡</span><span>🔴</span><span>🟣</span><span>🟣</span><span>🟠</span></div>","ayuda":"Va en la punta del árbol.","r":["CxICGwENCEw="]}]},{"nombre":"Dante","icono":"🔢","juego":"Código matemático","desc":"Resuelve las operaciones y convierte cada resultado en una letra.","niveles":[{"tipo":"texto","enunciado":"Cada resultado es una letra. ¿Qué palabra forman?","visual":"<p class=\"nota\">Clave: A = 1, B = 2, C = 3 … Z = 26 (sin Ñ)</p><ol class=\"ops\"><li>8 × 2 = <span class=\"hueco\">?</span></li><li>5 − 4 = <span class=\"hueco\">?</span></li><li>13 × 2 = <span class=\"hueco\">?</span></li></ol><details class=\"abc\"><summary>Ver tabla A=1 … Z=26</summary><div class=\"abc-grid\"><span><b>A</b>1</span><span><b>B</b>2</span><span><b>C</b>3</span><span><b>D</b>4</span><span><b>E</b>5</span><span><b>F</b>6</span><span><b>G</b>7</span><span><b>H</b>8</span><span><b>I</b>9</span><span><b>J</b>10</span><span><b>K</b>11</span><span><b>L</b>12</span><span><b>M</b>13</span><span><b>N</b>14</span><span><b>O</b>15</span><span><b>P</b>16</span><span><b>Q</b>17</span><span><b>R</b>18</span><span><b>S</b>19</span><span><b>T</b>20</span><span><b>U</b>21</span><span><b>V</b>22</span><span><b>W</b>23</span><span><b>X</b>24</span><span><b>Y</b>25</span><span><b>Z</b>26</span></div></details>","ayuda":"Lo contrario de la guerra.","r":["HgAM"]},{"tipo":"texto","enunciado":"Cada resultado es una letra. ¿Qué palabra forman?","visual":"<p class=\"nota\">Clave: A = 1, B = 2, C = 3 … Z = 26 (sin Ñ)</p><ol class=\"ops\"><li>3 + 3 = <span class=\"hueco\">?</span></li><li>10 − 5 = <span class=\"hueco\">?</span></li><li>4 × 3 = <span class=\"hueco\">?</span></li><li>18 ÷ 2 = <span class=\"hueco\">?</span></li><li>20 + 6 = <span class=\"hueco\">?</span></li></ol><details class=\"abc\"><summary>Ver tabla A=1 … Z=26</summary><div class=\"abc-grid\"><span><b>A</b>1</span><span><b>B</b>2</span><span><b>C</b>3</span><span><b>D</b>4</span><span><b>E</b>5</span><span><b>F</b>6</span><span><b>G</b>7</span><span><b>H</b>8</span><span><b>I</b>9</span><span><b>J</b>10</span><span><b>K</b>11</span><span><b>L</b>12</span><span><b>M</b>13</span><span><b>N</b>14</span><span><b>O</b>15</span><span><b>P</b>16</span><span><b>Q</b>17</span><span><b>R</b>18</span><span><b>S</b>19</span><span><b>T</b>20</span><span><b>U</b>21</span><span><b>V</b>22</span><span><b>W</b>23</span><span><b>X</b>24</span><span><b>Y</b>25</span><span><b>Z</b>26</span></div></details>","ayuda":"«___ Navidad»","r":["CAQaAB4="]},{"tipo":"texto","enunciado":"Cada resultado es una letra. ¿Qué palabra forman?","visual":"<p class=\"nota\">Clave: A = 1, B = 2, C = 3 … Z = 26 (sin Ñ)</p><ol class=\"ops\"><li>4 × 5 = <span class=\"hueco\">?</span></li><li>7 × 3 = <span class=\"hueco\">?</span></li><li>9 × 2 = <span class=\"hueco\">?</span></li><li>30 − 12 = <span class=\"hueco\">?</span></li><li>45 ÷ 3 = <span class=\"hueco\">?</span></li><li>7 + 7 = <span class=\"hueco\">?</span></li></ol><details class=\"abc\"><summary>Ver tabla A=1 … Z=26</summary><div class=\"abc-grid\"><span><b>A</b>1</span><span><b>B</b>2</span><span><b>C</b>3</span><span><b>D</b>4</span><span><b>E</b>5</span><span><b>F</b>6</span><span><b>G</b>7</span><span><b>H</b>8</span><span><b>I</b>9</span><span><b>J</b>10</span><span><b>K</b>11</span><span><b>L</b>12</span><span><b>M</b>13</span><span><b>N</b>14</span><span><b>O</b>15</span><span><b>P</b>16</span><span><b>Q</b>17</span><span><b>R</b>18</span><span><b>S</b>19</span><span><b>T</b>20</span><span><b>U</b>21</span><span><b>V</b>22</span><span><b>W</b>23</span><span><b>X</b>24</span><span><b>Y</b>25</span><span><b>Z</b>26</span></div></details>","ayuda":"Un dulce navideño muy duro.","r":["GhQEGwsP"]}]},{"nombre":"Guillermo","icono":"🕵️","juego":"La adivinanza misteriosa","desc":"Lee con atención y resuelve la adivinanza.","niveles":[{"tipo":"texto","enunciado":"Tengo agujas y no sé coser, tengo números y no sé leer. ¿Qué soy?","ayuda":"Lo miras para no llegar tarde.","r":["HAQaBg4="]},{"tipo":"texto","enunciado":"Tengo ciudades pero no casas, montañas pero no árboles, y agua pero no peces. ¿Qué soy?","ayuda":"Lo usas para no perderte.","r":["AwAGCA==","AwAGCAkUCklb"]},{"tipo":"texto","enunciado":"Llego una vez al año, traigo regalos sin ser rey mago, visto de rojo y vivo en el Polo Norte. ¿Quién soy?","ayuda":"Tiene barba blanca y renos.","r":["HgAGCAoOAUE=","HQAYHQUCCExHQw==","HQAYHQU=","HQAYHQUCCEJB","HQAYBw0CC0FTQw=="]}]},{"nombre":"Josefina","icono":"🔠","juego":"La sopa de letras secreta","desc":"Encuentra todas las palabras escondidas.","niveles":[{"tipo":"sopa","enunciado":"Encuentra las 3 palabras","palabras":["NIEVE","PAZ","AMOR"],"tam":7,"semilla":11},{"tipo":"sopa","enunciado":"Encuentra las 3 palabras","palabras":["REGALO","FAMILIA","ESTRELLA"],"tam":8,"semilla":22},{"tipo":"sopa","enunciado":"Encuentra las 4 palabras","palabras":["AMISTAD","ALEGRIA","SORPRESA","VILLANCICO"],"tam":10,"semilla":33}]},{"nombre":"Gabriel","icono":"🔎","juego":"El caso misterioso","desc":"Analiza las declaraciones y descubre al culpable.","niveles":[{"tipo":"opciones","enunciado":"Una de estas personas escondió el regalo. <b>Solo una dice la verdad.</b> ¿Quién lo escondió?","visual":"<ul class=\"lista\"><li>Ana: «Yo no fui».</li><li>Luis: «Fue Pedro».</li><li>Pedro: «Luis está mintiendo».</li></ul>","opciones":["Ana","Luis","Pedro"],"ayuda":"Prueba cada opción: imagina que fue esa persona y cuenta cuántos dicen la verdad.","r":"Xg=="},{"tipo":"opciones","enunciado":"Alguien se comió las galletas de Papá Noel. <b>Solo una persona dice la verdad.</b> ¿Quién fue?","visual":"<ul class=\"lista\"><li>Rosa: «Yo no fui».</li><li>Tomás: «Fue Rosa».</li><li>Elena: «Yo no fui».</li></ul>","opciones":["Rosa","Tomás","Elena"],"ayuda":"Si fue Rosa, ¿cuántos dirían la verdad? ¿Y si fue Tomás?","r":"XA=="},{"tipo":"opciones","enunciado":"El regalo desapareció a las <b>8:00 p. m.</b> ¿Quién pudo hacerlo?","visual":"<ul class=\"lista\"><li>Mario cocinó con la abuela de 7:00 a 9:00.</li><li>Lucía dice que vio una película que empezó a las 8:30.</li><li>Diego tiene un ticket de las 8:05 de una tienda a 30 minutos de la casa.</li></ul>","opciones":["Mario","Lucía","Diego"],"ayuda":"¿Quién no puede demostrar dónde estaba a las 8:00?","r":"Xw=="}]},{"nombre":"Noemí","icono":"🃏","juego":"Memoria fotográfica","desc":"Memoriza las cartas y encuentra las parejas.","niveles":[{"tipo":"memoria","enunciado":"Memoriza y encuentra las 3 parejas","pares":["🎄","⭐","🎁"],"vista":5},{"tipo":"memoria","enunciado":"Memoriza y encuentra las 4 parejas","pares":["🎄","⭐","🎁","🔔"],"vista":5},{"tipo":"memoria","enunciado":"Memoriza y encuentra las 6 parejas","pares":["🎄","⭐","🎁","🔔","⛄","🦌"],"vista":6}]},{"nombre":"Patricia","icono":"🔀","juego":"Letras revueltas","desc":"Ordena las letras para formar la palabra.","niveles":[{"tipo":"texto","enunciado":"Ordena las letras","visual":"<div class=\"letras\"><span>E</span><span>V</span><span>I</span><span>N</span><span>E</span></div>","ayuda":"Es blanca y fría.","r":["AAgTHwE="]},{"tipo":"texto","enunciado":"Ordena las letras","visual":"<div class=\"letras\"><span>D</span><span>A</span><span>V</span><span>I</span><span>N</span><span>A</span><span>D</span></div>","ayuda":"La fiesta del 25 de diciembre.","r":["AAAAAAAAAA=="]},{"tipo":"texto","enunciado":"Ordena las letras","visual":"<div class=\"letras\"><span>C</span><span>I</span><span>L</span><span>A</span><span>V</span><span>O</span><span>N</span><span>C</span><span>I</span><span>L</span></div>","ayuda":"Una canción de Navidad.","r":["GAgaBQUPB0RRXw=="]}]},{"nombre":"Fernando","icono":"🗺️","juego":"Código de coordenadas","desc":"Sigue las coordenadas (fila + columna) para leer el mensaje.","niveles":[{"tipo":"texto","enunciado":"Sigue las coordenadas","visual":"<table class=\"tabla coord\"><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th></tr><tr><th>A</th><td>P</td><td>M</td><td>R</td><td>S</td></tr><tr><th>B</th><td>T</td><td>Z</td><td>O</td><td>L</td></tr><tr><th>C</th><td>E</td><td>A</td><td>N</td><td>I</td></tr></table><div class=\"codigo txt\">A1 · C2 · B2</div>","ayuda":"A1 es la fila A, columna 1.","r":["HgAM"]},{"tipo":"texto","enunciado":"Sigue las coordenadas","visual":"<table class=\"tabla coord\"><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th></tr><tr><th>A</th><td>R</td><td>N</td><td>T</td><td>E</td></tr><tr><th>B</th><td>V</td><td>O</td><td>L</td><td>I</td></tr><tr><th>C</th><td>S</td><td>A</td><td>M</td><td>C</td></tr><tr><th>D</th><td>U</td><td>P</td><td>D</td><td>G</td></tr></table><div class=\"codigo txt\">A2 · B4 · A4 · B1 · A4</div>","ayuda":"Es blanca y fría.","r":["AAgTHwE="]},{"tipo":"texto","enunciado":"Sigue las coordenadas","visual":"<table class=\"tabla coord\"><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr><tr><th>A</th><td>Q</td><td>L</td><td>M</td><td>S</td><td>F</td></tr><tr><th>B</th><td>E</td><td>T</td><td>R</td><td>O</td><td>B</td></tr><tr><th>C</th><td>A</td><td>U</td><td>N</td><td>C</td><td>I</td></tr><tr><th>D</th><td>G</td><td>P</td><td>H</td><td>D</td><td>V</td></tr><tr><th>E</th><td>X</td><td>Y</td><td>Z</td><td>K</td><td>J</td></tr></table><div class=\"codigo txt\">B5 · B1 · A2 · B1 · C3</div>","ayuda":"Donde se arma el nacimiento.","r":["DAQaDAo="]}]},{"nombre":"Valeria","icono":"👀","juego":"El juego de las diferencias","desc":"Toca en la imagen de abajo lo que cambió.","niveles":[{"tipo":"diferencias","enunciado":"Encuentra las 3 diferencias","difs":["estrella","luna","puerta"]},{"tipo":"diferencias","enunciado":"Encuentra las 4 diferencias","difs":["ventana","nariz","regalo","esfera"]},{"tipo":"diferencias","enunciado":"Encuentra las 5 diferencias","difs":["sombrero","humo","copo","bufanda","regalo2"]}]},{"nombre":"Cesar","icono":"📈","juego":"La secuencia perdida","desc":"Descubre qué número sigue en la secuencia.","niveles":[{"tipo":"texto","enunciado":"¿Qué número sigue?","visual":"<div class=\"serie\">5 – 10 – 15 – 20 – ?</div>","ayuda":"Fíjate cuánto aumenta cada vez.","r":["XFQ=","GAQfBxAIB0RcU10="]},{"tipo":"texto","enunciado":"¿Qué número sigue?","visual":"<div class=\"serie\">3 – 6 – 12 – 24 – ?</div>","ayuda":"Cada número es el doble del anterior.","r":["Wlk=","DRQXGwEPEExLX1FeAQ=="]},{"tipo":"texto","enunciado":"¿Qué número sigue?","visual":"<div class=\"serie\">1 – 1 – 2 – 3 – 5 – 8 – ?</div>","ayuda":"Suma los dos números anteriores.","r":["X1I=","GhMTCgE="]}]},{"nombre":"Jhency","icono":"🧠","juego":"El detective de las pistas","desc":"Relaciona la información y deduce la respuesta.","niveles":[{"tipo":"opciones","enunciado":"Ana, Luis y María tienen un color favorito distinto: rojo, azul y verde. <b>¿Qué color eligió Ana?</b>","visual":"<ul class=\"lista\"><li>Ana no eligió el rojo.</li><li>Luis eligió el azul.</li><li>María no eligió el verde.</li></ul>","opciones":["Rojo","Azul","Verde"],"ayuda":"Empieza por Luis, que es seguro.","r":"XA=="},{"tipo":"opciones","enunciado":"Leo, Mía y Sol trajeron panetón, chocolate y galletas (uno cada uno). <b>¿Quién trajo las galletas?</b>","visual":"<ul class=\"lista\"><li>Leo no trajo chocolate ni galletas.</li><li>Mía no trajo galletas.</li></ul>","opciones":["Leo","Mía","Sol"],"ayuda":"¿Qué trajo Leo entonces?","r":"XA=="},{"tipo":"opciones","enunciado":"Hay 4 regalos en fila: rojo, verde, azul y dorado. <b>¿De qué color es el último?</b>","visual":"<ul class=\"lista\"><li>El rojo está primero.</li><li>El dorado está justo después del verde.</li><li>El azul no está al final.</li></ul>","opciones":["Rojo","Verde","Azul","Dorado"],"ayuda":"Si el azul no puede ir último, ¿dónde va?","r":"XQ=="}]},{"nombre":"Juliett","icono":"🔐","juego":"El candado misterioso","desc":"Cada respuesta es un número de la combinación.","niveles":[{"tipo":"candado","enunciado":"Abre el candado","visual":"<ul class=\"lista\"><li>1.º ¿Cuánto es 2 + 3?</li><li>2.º ¿Cuántos lados tiene un triángulo?</li><li>3.º ¿Cuánto es 10 − 6?</li><li>4.º ¿Cuántas ruedas tiene una bicicleta?</li></ul>","ayuda":"Pon un número por cada pregunta, en orden.","r":["W1JCWw=="]},{"tipo":"candado","enunciado":"Abre el candado","visual":"<ul class=\"lista\"><li>1.º Patas de una araña ÷ 4</li><li>2.º Colores de un semáforo</li><li>3.º Dedos de una mano</li><li>4.º ¿Cuánto es 3 × 3?</li></ul>","ayuda":"Una araña tiene 8 patas.","r":["XFJDUA=="]},{"tipo":"candado","enunciado":"Abre el candado","visual":"<ul class=\"lista\"><li>Los dos primeros dígitos: el día de Navidad</li><li>Los dos últimos dígitos: el número del mes de Navidad</li></ul>","ayuda":"Diciembre es el mes número…","r":["XFRHWw=="]}]},{"nombre":"Ashley","icono":"🎡","juego":"La ruleta de los desafíos","desc":"Gira la ruleta y supera el desafío que te toque.","niveles":[{"tipo":"ruleta","enunciado":"Gira la ruleta","retos":[{"tipo":"texto","enunciado":"Blanca por dentro, verde por fuera; si quieres que te lo diga, espera. ¿Qué es?","r":["HgQECA=="]},{"tipo":"texto","enunciado":"¿Cuál es la capital del Perú?","r":["AggbCA=="]},{"tipo":"texto","enunciado":"¿Cuánto es 7 × 8?","r":["W1c=","DQgYChEECllTSUFTBxI="]},{"tipo":"texto","enunciado":"Ordena estas letras:","visual":"<div class=\"letras\"><span>R</span><span>O</span><span>G</span><span>A</span><span>L</span><span>E</span></div>","r":["HAQRCAgO"]},{"tipo":"opciones","enunciado":"¿Cuál sobra?","opciones":["🍎","🍌","🚗","🍇"],"r":"XA=="},{"tipo":"texto","enunciado":"Si hoy es domingo, ¿qué día será pasado mañana?","r":["AwAEHQES"]}]},{"tipo":"ruleta","enunciado":"Gira la ruleta","retos":[{"tipo":"texto","enunciado":"Oro parece, plata no es. ¿Qué es?","r":["Hg0XHQUPCw==","DAAYCAoA","DAAYCAoO"]},{"tipo":"texto","enunciado":"¿En qué país está Machu Picchu?","r":["HgQEHA=="]},{"tipo":"texto","enunciado":"¿Cuánto es 15 + 27?","r":["WlM=","DRQXGwEPEExLVF1F"]},{"tipo":"texto","enunciado":"Ordena estas letras:","visual":"<div class=\"letras\"><span>Z</span><span>A</span><span>P</span></div>","r":["HgAM"]},{"tipo":"opciones","enunciado":"¿Cuál NO es un color?","opciones":["Rojo","Azul","Mesa","Verde"],"r":"XA=="},{"tipo":"texto","enunciado":"Tengo 3 manzanas y me como una. ¿Cuántas me quedan?","r":["XA==","Cg4F"]}]},{"tipo":"ruleta","enunciado":"Gira la ruleta","retos":[{"tipo":"texto","enunciado":"Vuela sin alas, silba sin boca y no lo puedes ver. ¿Qué es?","r":["GAgTBxAO","DwgEDA=="]},{"tipo":"texto","enunciado":"¿Cuántos días tiene diciembre?","r":["XVA=","GhMTAAoVBVRHXl0="]},{"tipo":"texto","enunciado":"¿Cuánto es 100 − 37?","r":["WFI=","HQQFDAoVBVRGQldF"]},{"tipo":"texto","enunciado":"Ordena estas letras:","visual":"<div class=\"letras\"><span>A</span><span>L</span><span>E</span><span>V</span></div>","r":["GAQaCA=="]},{"tipo":"opciones","enunciado":"¿Qué NO llevarías a la playa?","opciones":["Sombrilla","Toalla","Bufanda","Bloqueador"],"r":"XA=="},{"tipo":"texto","enunciado":"Un padre y su hijo suman 36 años. El padre tiene 30 años más que el hijo. ¿Cuántos años tiene el hijo?","r":["XQ==","GhMTGg=="]}]}]}]};
+
+/* ---------- utilidades ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const app = $('#app');
+const NOMBRES = DATA.participantes.map(p => p.nombre);
+const participante = n => DATA.participantes.find(p => p.nombre === n);
+const TIPOS_PISTA = ['Una característica general', 'Un gusto o afición', 'Una pista más específica'];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+const KEY = new TextEncoder().encode('navidad-2026');
+const xor = b => b.map((x, i) => x ^ KEY[i % KEY.length]);
+function enc(str) { const b = xor(new TextEncoder().encode(String(str))); let s = ''; b.forEach(x => s += String.fromCharCode(x)); return btoa(s); }
+function dec(b64) { const s = atob(b64); const b = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return new TextDecoder().decode(xor(b)); }
+const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim()
+  .replace(/^(el|la|los|las|un|una)\s+/, '').replace(/[^a-z0-9]/g, '');
+
+const mem = {};
+const store = {
+  get(k) { try { const v = localStorage.getItem(k); if (v != null) return JSON.parse(v); } catch (e) { } return k in mem ? mem[k] : null; },
+  set(k, v) { mem[k] = v; try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } },
+  del(k) { delete mem[k]; try { localStorage.removeItem(k); } catch (e) { } },
+};
+
+function toast(t, ms = 1800) { const el = $('#toast'); el.textContent = t; el.classList.add('ver'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('ver'), ms); }
+function modal(html, botones) {
+  return new Promise(res => {
+    const m = $('#modal');
+    m.innerHTML = `<div class="modal-caja">${html}<div class="modal-btns">${botones.map((b, i) => `<button class="btn ${b.cls || ''}" data-i="${i}">${b.t}</button>`).join('')}</div></div>`;
+    m.hidden = false;
+    m.onclick = e => { const b = e.target.closest('[data-i]'); if (b) { m.hidden = true; res(+b.dataset.i); } };
+  });
+}
+function fiesta(grande) {
+  if (!window.confetti) return;
+  const colors = ['#c8102e', '#f4c430', '#1e7d4f', '#ffffff'];
+  confetti({ particleCount: grande ? 180 : 110, spread: grande ? 110 : 75, origin: { y: .65 }, colors });
+  if (grande) { setTimeout(() => confetti({ particleCount: 90, angle: 60, spread: 60, origin: { x: 0 }, colors }), 250); setTimeout(() => confetti({ particleCount: 90, angle: 120, spread: 60, origin: { x: 1 }, colors }), 450); }
+}
+let actx;
+function sonido(tipo) {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const notas = tipo === 'mal' ? [220, 180] : tipo === 'final' ? [523, 659, 784, 1047, 784, 1047] : [659, 784, 1047];
+    notas.forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = tipo === 'mal' ? 'square' : 'triangle'; o.frequency.value = f;
+      const t = actx.currentTime + i * .12;
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.18, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .25);
+      o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + .3);
+    });
+  } catch (e) { }
+}
+function fallo(el, msg) { sonido('mal'); if (el) { el.classList.remove('sacudir'); void el.offsetWidth; el.classList.add('sacudir'); } toast(msg || '¡Casi! Intenta otra vez 🎄'); }
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function barajar(a, r = Math.random) { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const fmtTiempo = ms => { const s = Math.max(0, Math.round(ms / 1000)); const m = Math.floor(s / 60); return `${m}:${String(s % 60).padStart(2, '0')} min`; };
+async function copiar(texto, area) {
+  try { await navigator.clipboard.writeText(texto); toast('¡Copiado! 📋'); }
+  catch (e) { if (area) { area.focus(); area.select(); try { document.execCommand('copy'); toast('¡Copiado! 📋'); return; } catch (_) { } } toast('Mantén presionado el texto para copiarlo'); }
+}
+
+/* ---------- decoraciones SVG ---------- */
+const SVG_GUIRNALDA = (() => {
+  const colores = ['#c8102e', '#f4c430', '#3a7bd5', '#ffffff', '#1e7d4f'];
+  let bolas = '';
+  for (let i = 0; i < 9; i++) { const x = 25 + i * 50, y = 14 + Math.sin(i * 0.9) * 4 + (i % 2 ? 12 : 4); bolas += `<line x1="${x}" y1="${y - 10}" x2="${x}" y2="${y - 2}" stroke="#d9a400" stroke-width="2"/><circle cx="${x}" cy="${y + 6}" r="8" fill="${colores[i % 5]}" stroke="#d9a400" stroke-width="1.5"/><circle cx="${x - 3}" cy="${y + 3}" r="2.2" fill="#fff" opacity=".7"/>`; }
+  return `<svg class="guirnalda" viewBox="0 0 450 46" preserveAspectRatio="none"><path d="M0 6 Q56 26 112 8 T225 8 T338 8 T450 6" fill="none" stroke="#1e7d4f" stroke-width="9" stroke-linecap="round"/><path d="M0 6 Q56 26 112 8 T225 8 T338 8 T450 6" fill="none" stroke="#2f9e63" stroke-width="3" stroke-dasharray="4 6"/>${bolas}</svg>`;
+})();
+const SVG_ARBOL = `<svg viewBox="0 0 120 120"><polygon points="60,4 64,14 75,14 66,20 69,30 60,24 51,30 54,20 45,14 56,14" fill="#f4c430"/><polygon points="60,22 34,60 86,60" fill="#1e7d4f"/><polygon points="60,40 26,84 94,84" fill="#178048"/><polygon points="60,60 18,108 102,108" fill="#0f6b3c"/><rect x="53" y="106" width="14" height="12" fill="#6b3a1e"/><path d="M38 66 Q60 76 82 64" stroke="#f4c430" stroke-width="2.5" fill="none"/><path d="M30 92 Q60 104 92 90" stroke="#f4c430" stroke-width="2.5" fill="none"/><circle cx="48" cy="52" r="4" fill="#c8102e"/><circle cx="72" cy="56" r="4" fill="#fff"/><circle cx="44" cy="78" r="4.5" fill="#3a7bd5"/><circle cx="76" cy="80" r="4.5" fill="#c8102e"/><circle cx="60" cy="70" r="4" fill="#f4c430"/><circle cx="36" cy="100" r="5" fill="#f4c430"/><circle cx="62" cy="96" r="5" fill="#c8102e"/><circle cx="86" cy="100" r="5" fill="#fff"/></svg>`;
+const SVG_REGALO = `<svg class="regalo-svg" viewBox="0 0 120 120"><g class="caja"><rect x="18" y="52" width="84" height="60" rx="5" fill="#c8102e"/><rect x="18" y="52" width="84" height="10" fill="#a50d26"/><rect x="54" y="52" width="12" height="60" fill="#f4c430"/></g><g class="tapa"><rect x="12" y="38" width="96" height="18" rx="4" fill="#e01e3c"/><rect x="54" y="38" width="12" height="18" fill="#f4c430"/><path d="M60 38 C44 14 26 30 60 38 Z" fill="#f4c430" stroke="#d9a400" stroke-width="2"/><path d="M60 38 C76 14 94 30 60 38 Z" fill="#f4c430" stroke="#d9a400" stroke-width="2"/></g></svg>`;
+const SVG_CANDADO = `<svg viewBox="0 0 90 100"><path class="arco" d="M24 46 V30 a21 21 0 0 1 42 0 V46" fill="none" stroke="#9aa3ad" stroke-width="9"/><rect x="12" y="44" width="66" height="52" rx="10" fill="#f4c430" stroke="#d9a400" stroke-width="3"/><circle cx="45" cy="66" r="7" fill="#6b4a00"/><rect x="42" y="68" width="6" height="14" rx="2" fill="#6b4a00"/></svg>`;
+
+/* ---------- nieve ---------- */
+(function nieve() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c = $('#nieve'), ctx = c.getContext('2d'); let W, H, copos = [];
+  const tam = () => { W = c.width = innerWidth; H = c.height = innerHeight; };
+  tam(); addEventListener('resize', tam);
+  for (let i = 0; i < 70; i++) copos.push({ x: Math.random() * W, y: Math.random() * H, r: 1 + Math.random() * 3, v: .3 + Math.random() * 1, d: Math.random() * 6 });
+  (function loop() {
+    ctx.clearRect(0, 0, W, H); ctx.fillStyle = 'rgba(255,255,255,.85)';
+    copos.forEach(f => { f.y += f.v; f.d += .01; f.x += Math.sin(f.d) * .4; if (f.y > H) { f.y = -5; f.x = Math.random() * W; } ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 7); ctx.fill(); });
+    requestAnimationFrame(loop);
+  })();
+})();
+
+/* ---------- conexión con el servidor ---------- */
+const API_URL = 'api.php';
+// #demo: simula el servidor dentro del navegador (para probar sin hosting). PIN del panel en demo: demo
+if (location.hash === '#demo') store.set('as_demo', true);
+const DEMO = !!store.get('as_demo');
+const bannerDemo = () => DEMO ? `<div class="banner">🧪 MODO DEMO · sorteo simulado en este celular <button class="link osc" id="salirDemo" style="margin-left:6px">Salir</button></div>` : '';
+document.addEventListener('click', e => {
+  if (e.target.id === 'salirDemo') { store.del('as_demo'); store.del('as_yo'); location.hash = 'juego'; location.reload(); }
+});
+
+function miToken() {
+  let t = store.get('as_token');
+  if (!t) { const a = new Uint8Array(16); crypto.getRandomValues(a); t = [...a].map(b => b.toString(16).padStart(2, '0')).join(''); store.set('as_token', t); }
+  return t;
+}
+
+async function api(accion, datos = {}) {
+  if (DEMO) return apiLocal(accion, datos);
+  let r, j;
+  try { r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accion, ...datos }), cache: 'no-store' }); }
+  catch (e) { throw Object.assign(new Error('Sin conexión. Revisa tu internet e intenta de nuevo.'), { status: 0 }); }
+  try { j = await r.json(); } catch (e) { throw Object.assign(new Error(`El servidor no respondió bien (${r.status}).`), { status: r.status }); }
+  if (!j.ok) throw Object.assign(new Error(j.error || 'Error del servidor'), { status: r.status });
+  return j;
+}
+
+// Servidor simulado (misma lógica que api.php)
+function apiLocal(accion, d) {
+  const db = store.get('as_demo_db') || Object.fromEntries(NOMBRES.map(n => [n, { token: null, asignado: null, orden: null }]));
+  const save = () => store.set('as_demo_db', db);
+  const fallo = (m, s = 400) => Promise.reject(Object.assign(new Error(m), { status: s }));
+  const ok = o => new Promise(r => setTimeout(() => r({ ok: true, ...o }), 250));
+  const fila = db[d.nombre];
+  if (['reclamar', 'resultado', 'sortear'].includes(accion) && !fila) return fallo('Ese nombre no está en la lista.', 404);
+  if (['admin', 'liberar', 'anular', 'reiniciar'].includes(accion) && d.pin !== 'demo') return fallo('PIN incorrecto. (En demo es: demo)', 403);
+  switch (accion) {
+    case 'estado': return ok({ ahora: Date.now(), inicio: null, whatsapp: '', participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, termino: !!db[n].asignado })) });
+    case 'reclamar':
+      if (fila.token && fila.token !== d.token) return fallo('Este nombre ya se está usando en otro celular. Pídele al anfitrión que lo libere.', 409);
+      fila.token = d.token; save(); return ok({ asignado: fila.asignado });
+    case 'resultado':
+      if (fila.token !== d.token) return fallo('Este nombre está vinculado a otro celular.', 409);
+      return ok({ asignado: fila.asignado, orden: fila.orden });
+    case 'sortear': {
+      if (fila.token !== d.token) return fallo('Este nombre está vinculado a otro celular.', 409);
+      if (fila.asignado) return ok({ asignado: fila.asignado, orden: fila.orden });
+      const tomados = new Set(NOMBRES.map(n => db[n].asignado).filter(Boolean));
+      const pendientes = NOMBRES.filter(n => !db[n].asignado);
+      let cand = NOMBRES.filter(n => n !== d.nombre && !tomados.has(n));
+      if (pendientes.length === 2) { const otro = pendientes.find(n => n !== d.nombre); if (cand.includes(otro)) cand = [otro]; }
+      if (!cand.length) return fallo('No quedan personas para sortear. Avísale al anfitrión.', 409);
+      fila.asignado = cand[Math.floor(Math.random() * cand.length)];
+      fila.orden = Math.max(0, ...NOMBRES.map(n => db[n].orden || 0)) + 1; fila.sorteado_en = new Date().toLocaleString('es-PE'); save();
+      return ok({ asignado: fila.asignado, orden: fila.orden });
+    }
+    case 'admin': return ok({ inicio: null, ahora: Date.now(), participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, asignado: db[n].asignado, orden: db[n].orden, sorteado_en: db[n].sorteado_en || null })).sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99)) });
+    case 'liberar': fila.token = null; save(); return ok({});
+    case 'anular': Object.assign(fila, { asignado: null, orden: null, sorteado_en: null }); save(); return ok({});
+    case 'reiniciar': store.del('as_demo_db'); return ok({});
+  }
+  return fallo('Acción desconocida.');
+}
+
+let ESTADO = null, DESFASE = 0; // DESFASE: diferencia entre el reloj del servidor y el del celular
+const ahoraServidor = () => Date.now() + DESFASE;
+async function cargarEstado() { ESTADO = await api('estado'); DESFASE = ESTADO.ahora - Date.now(); return ESTADO; }
+
+/* ---------- progreso local (rondas jugadas en este celular) ---------- */
+const nuevoProg = () => ({ inicio: null, rondas: [false, false, false], fin: null, asignado: null });
+const claveProg = yo => 'as_prog_' + (DEMO ? 'demo_' : '') + yo;
+const prog = yo => Object.assign(nuevoProg(), store.get(claveProg(yo)) || {});
+const guardar = (yo, p) => store.set(claveProg(yo), p);
+const MENSAJES = ['¡Eres una máquina! 🎉', '¡Toda la familia te aplaude! 👏', '¡Nivel experto desbloqueado! 🧠'];
+
+/* ---------- vistas ---------- */
+function pantalla(html) { app.innerHTML = SVG_GUIRNALDA + html; scrollTo(0, 0); }
+const HERO = `<header class="hero">${SVG_ARBOL}<h1>Amigo Secreto</h1><p class="sub">Familiar · Navidad 2026</p></header>`;
+
+function vistaCargando() { pantalla(`${HERO}<p class="saludo">Conectando… 🎄</p>`); }
+
+function vistaError(msg, reintentar) {
+  pantalla(`${HERO}<section class="card centro"><h2>¡Ups!</h2><p class="desc">${esc(msg)}</p><p style="margin-top:14px"><button class="btn" id="reint">🔄 Reintentar</button></p></section>`);
+  $('#reint').onclick = reintentar || ruta;
+}
+
+function vistaInicio() {
+  const yoToken = miToken();
+  const estado = Object.fromEntries((ESTADO?.participantes || []).map(p => [p.nombre, p]));
+  pantalla(`
+    ${HERO}${bannerDemo()}
+    <section class="card"><h2>¿Quién eres?</h2>
+      <p class="nota">Elige tu nombre. Supera tus 3 desafíos y descubrirás a quién le regalas.</p>
+      <div class="nombres">${DATA.participantes.map(p => {
+        const e = estado[p.nombre] || {};
+        return `<button class="nombre" data-n="${esc(p.nombre)}" ${e.ocupado ? 'data-ocupado="1"' : ''}><span class="emo">${p.icono}</span>${esc(p.nombre)}${e.termino ? '<span class="est">✅</span>' : e.ocupado ? '<span class="est">🔒</span>' : ''}</button>`;
+      }).join('')}</div>
+      <p class="nota" style="margin-top:10px">🔒 = ya se está jugando en otro celular · ✅ = ya sorteó</p>
+    </section>`);
+  $$('.nombre').forEach(b => b.onclick = async () => {
+    const n = b.dataset.n;
+    const i = await modal(`<h3>¿Eres ${esc(n)}?</h3><p>Este nombre quedará vinculado a este celular.</p>`, [{ t: 'No', cls: 'sec' }, { t: '¡Sí, soy yo!', cls: 'verde' }]);
+    if (i !== 1) return;
+    try {
+      const r = await api('reclamar', { nombre: n, token: yoToken });
+      store.set('as_yo', n);
+      if (r.asignado) { const p = prog(n); p.asignado = r.asignado; p.rondas = [true, true, true]; guardar(n, p); }
+      vistaHub(n);
+    } catch (e) { await modal(`<h3>No se pudo</h3><p>${esc(e.message)}</p>`, [{ t: 'OK' }]); ruta(); }
+  });
+}
+
+function vistaCuenta() {
+  const pintar = () => {
+    if (!$('#reloj')) return clearInterval(vistaCuenta.iv);
+    const ms = ESTADO.inicio - ahoraServidor();
+    if (ms <= 0) { clearInterval(vistaCuenta.iv); return ruta(); }
+    const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60;
+    $('#reloj').textContent = `${d ? d + 'd ' : ''}${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+  };
+  pantalla(`${HERO}
+    <section class="card centro">
+      <h2>El juego empieza en…</h2>
+      <div class="final-nombre" id="reloj" style="font-family:'Nunito',system-ui,sans-serif;font-weight:900;font-size:44px">--:--:--</div>
+      <p class="desc">${new Date(ESTADO.inicio).toLocaleString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>
+    </section>`);
+  clearInterval(vistaCuenta.iv); pintar(); vistaCuenta.iv = setInterval(pintar, 1000);
+}
+
+function vistaHub(yo) {
+  const P = participante(yo), p = prog(yo);
+  if (!p.inicio) { p.inicio = Date.now(); guardar(yo, p); }
+  const rondas = [0, 1, 2].map(i => {
+    const hecha = p.rondas[i], abierta = i === 0 || p.rondas[i - 1];
+    return `<div class="ronda ${hecha ? 'hecha' : abierta ? 'abierta' : 'bloq'}">
+      <div class="ronda-num">${hecha ? '✅' : abierta ? '🎁' : '🔒'}</div>
+      <div class="ronda-txt"><b>Desafío ${i + 1}</b><small>${hecha ? '¡Superado!' : abierta ? 'Listo para jugar' : 'Bloqueado'}</small></div>
+      ${!hecha && abierta ? `<button class="btn chico" data-ronda="${i}">Jugar</button>` : ''}</div>`;
+  }).join('');
+  const todas = p.rondas.every(Boolean);
+  pantalla(`
+    <div class="saludo"><h1>¡Hola, ${esc(yo)}!</h1></div>
+    ${bannerDemo()}
+    <section class="card">
+      <div class="juego-tit">${P.icono} Tu juego</div>
+      <h2>${esc(P.juego)}</h2>
+      <p class="desc">${esc(P.desc)} Supera los 3 desafíos para descubrir a quién le regalas.</p>
+      ${rondas}
+      ${todas ? `<button class="btn oro" id="sortear">${p.asignado ? '🎁 Ver a quién le regalo' : '🎁 ¡Descubre a quién le regalas!'}</button>` : ''}
+    </section>
+    <p class="enlace"><button class="link" id="cambiar">¿No eres ${esc(yo)}? Cambiar</button></p>`);
+  $$('[data-ronda]').forEach(b => b.onclick = () => vistaReto(yo, +b.dataset.ronda));
+  $('#sortear') && ($('#sortear').onclick = () => p.asignado ? vistaResultado(yo, false) : vistaSorteo(yo));
+  $('#cambiar').onclick = async () => {
+    const i = await modal(`<h3>¿Cambiar de jugador?</h3><p>${esc(yo)} seguirá vinculado a este celular. Si te equivocaste de nombre, pídele al anfitrión que lo libere.</p>`, [{ t: 'Cancelar', cls: 'sec' }, { t: 'Cambiar' }]);
+    if (i === 1) { store.del('as_yo'); ruta(); }
+  };
+  // Verifica en segundo plano que este celular sigue siendo dueño del nombre y si ya sorteó
+  api('resultado', { nombre: yo, token: miToken() }).then(r => {
+    if (r.asignado && !p.asignado) { p.asignado = r.asignado; p.rondas = [true, true, true]; guardar(yo, p); vistaHub(yo); }
+  }).catch(async e => {
+    if (e.status === 409) { store.del('as_yo'); await modal(`<h3>Nombre liberado</h3><p>${esc(e.message)}</p>`, [{ t: 'OK' }]); ruta(); }
+  });
+}
+
+function vistaReto(yo, i) {
+  const P = participante(yo), nivel = P.niveles[i];
+  pantalla(`
+    <div class="topbar"><button id="volver">← Volver</button><span>Desafío ${i + 1} de 3</span></div>
+    <section class="card reto">
+      <div class="juego-tit">${P.icono} ${esc(P.juego)}</div>
+      <h2>${nivel.enunciado}</h2>
+      <div id="zona"></div>
+      ${nivel.ayuda ? `<button class="ayuda-btn" id="ayudaBtn">💡 Pedir ayuda</button><p class="ayuda" id="ayuda" hidden>${nivel.ayuda}</p>` : ''}
+    </section>`);
+  $('#volver').onclick = () => vistaHub(yo);
+  if (nivel.ayuda) $('#ayudaBtn').onclick = () => { $('#ayuda').hidden = false; $('#ayudaBtn').remove(); };
+  RENDER[nivel.tipo]($('#zona'), nivel, () => completarRonda(yo, i));
+}
+
+function completarRonda(yo, i) {
+  const p = prog(yo); p.rondas[i] = true;
+  if (p.rondas.every(Boolean) && !p.fin) p.fin = Date.now();
+  guardar(yo, p);
+  sonido('bien'); fiesta(false);
+  setTimeout(() => vistaRegalo(yo, i), 700);
+}
+
+function vistaRegalo(yo, i) {
+  const faltan = 2 - i;
+  pantalla(`
+    <section class="card centro">
+      <h2>¡Superaste el desafío ${i + 1}!</h2>
+      <p class="desc">Toca el regalo</p>
+      <button class="regalo-btn" id="regalo" aria-label="Abrir regalo">${SVG_REGALO}</button>
+      <div class="pista-grande" id="pista">${MENSAJES[i]}<br><small style="font-size:17px;color:var(--gris)">${faltan ? `Te falta${faltan > 1 ? 'n' : ''} ${faltan} desafío${faltan > 1 ? 's' : ''} para descubrir a quién le regalas.` : '¡Ya puedes descubrir a quién le regalas!'}</small></div>
+      <button class="btn ${faltan ? 'verde' : 'oro'}" id="seguir" hidden>${faltan ? 'Continuar' : '🎁 ¡Descubrir ahora!'}</button>
+    </section>`);
+  $('#regalo').onclick = () => {
+    if ($('#regalo').classList.contains('abierto')) return;
+    $('#regalo').classList.add('abierto'); sonido('bien'); fiesta(false);
+    $('#pista').classList.add('ver'); $('#seguir').hidden = false;
+  };
+  $('#seguir').onclick = () => faltan ? vistaHub(yo) : vistaSorteo(yo);
+}
+
+function vistaSorteo(yo) {
+  pantalla(`
+    <section class="card centro">
+      <h2>¡Llegó el momento!</h2>
+      <p class="desc" style="font-size:18px">👀 Asegúrate de que <b>nadie más</b> esté viendo tu pantalla.</p>
+      <div style="font-size:64px;margin:10px 0">🤫</div>
+      <button class="btn oro" id="listo">Estoy listo, ¡sortear!</button>
+    </section>`);
+  $('#listo').onclick = async () => {
+    pantalla(`
+      <section class="card centro">
+        <p class="juego-tit">🎄 Sorteando… 🎄</p>
+        <h2>Te toca regalarle a…</h2>
+        <div class="tragamonedas" id="slot">?</div>
+        <p class="desc" id="sub">🥁🥁🥁</p>
+      </section>`);
+    const otros = NOMBRES.filter(n => n !== yo);
+    let k = 0, activo = true, vel = 70;
+    const girar = () => { if (!activo) return; $('#slot').textContent = otros[k++ % otros.length]; sonido.tick && sonido.tick(); setTimeout(girar, vel); };
+    girar();
+    const minimo = new Promise(r => setTimeout(r, 2800));
+    try {
+      const [r] = await Promise.all([api('sortear', { nombre: yo, token: miToken() }), minimo]);
+      // desacelera y se detiene en el resultado
+      for (const v of [110, 160, 230, 320, 430]) { vel = v; await new Promise(res => setTimeout(res, v)); }
+      activo = false;
+      const p = prog(yo); p.asignado = r.asignado; if (!p.fin) p.fin = Date.now(); guardar(yo, p);
+      vistaResultado(yo, true);
+    } catch (e) {
+      activo = false;
+      if (e.status === 409 && /otro celular/.test(e.message)) store.del('as_yo');
+      vistaError(e.message, () => (store.get('as_yo') ? vistaSorteo(yo) : ruta()));
+    }
+  };
+}
+
+function vistaResultado(yo, recien) {
+  const p = prog(yo);
+  const num = (ESTADO?.whatsapp || '').replace(/\D/g, '');
+  const msg = `🎄 Amigo Secreto 2026: soy ${yo} y me tocó regalarle a ${p.asignado}.`;
+  const wa = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+  pantalla(`
+    <section class="card centro">
+      <p class="juego-tit">🎄 ${esc(yo)}, en este Amigo Secreto… 🎄</p>
+      <h2 style="margin-bottom:0">Te toca regalarle a</h2>
+      <button class="final-nombre ${recien ? '' : 'oculto'}" id="nombreRes" style="background:none;border:0;cursor:pointer;width:100%">${esc(p.asignado)}</button>
+      ${recien ? '' : '<p class="nota" id="tocaVer">Toca el nombre para verlo</p>'}
+      ${SVG_REGALO.replace('class="regalo-svg"', 'class="regalo-svg" style="width:100px;height:100px"')}
+      <p class="tiempo">${p.inicio && p.fin ? `⏱️ Tus desafíos: ${fmtTiempo(p.fin - p.inicio)}` : ''}</p>
+      <p class="desc"><b>🤫 Es secreto:</b> no se lo cuentes a nadie. Solo avísale al anfitrión.</p>
+      <a class="btn verde" style="display:block;text-decoration:none;margin-top:12px" href="${wa}" target="_blank" rel="noopener">📲 Avisar al anfitrión por WhatsApp</a>
+      <p class="nota">Si WhatsApp no abre, escríbele: “${esc(msg)}”</p>
+      <p style="margin-top:10px"><button class="btn sec" id="ocultar">🙈 Ocultar nombre</button></p>
+    </section>`);
+  $('#nombreRes').onclick = () => { $('#nombreRes').classList.toggle('oculto'); $('#tocaVer') && $('#tocaVer').remove(); };
+  $('#ocultar').onclick = () => $('#nombreRes').classList.add('oculto');
+  if (recien) { sonido('final'); fiesta(true); }
+}
+
+
+/* ---------- motores de juego ---------- */
+const RENDER = {};
+
+RENDER.texto = (z, n, ganar) => {
+  z.innerHTML = `${n.visual || ''}<form class="resp"><input autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Escribe tu respuesta" required><button class="btn">Comprobar</button></form>`;
+  const f = $('form', z), inp = $('input', z);
+  f.onsubmit = e => { e.preventDefault(); const v = norm(inp.value); if (v && n.r.some(x => dec(x) === v)) { inp.blur(); ganar(); } else fallo(inp); };
+};
+
+RENDER.opciones = (z, n, ganar) => {
+  z.innerHTML = `${n.visual || ''}<div class="opciones">${n.opciones.map((o, i) => `<button class="opcion" data-i="${i}">${o}</button>`).join('')}</div>`;
+  const ok = dec(n.r);
+  $$('.opcion', z).forEach(b => b.onclick = () => {
+    if (b.dataset.i === ok) { b.classList.add('bien'); ganar(); }
+    else { b.classList.add('mal'); b.disabled = true; fallo(b); }
+  });
+};
+
+RENDER.candado = (z, n, ganar) => {
+  const d = [0, 0, 0, 0];
+  z.innerHTML = `${n.visual || ''}<div class="candado">${SVG_CANDADO}</div>
+    <div class="diales">${d.map((_, i) => `<div class="dial"><button data-i="${i}" data-d="1" aria-label="subir">▲</button><span>0</span><button data-i="${i}" data-d="-1" aria-label="bajar">▼</button></div>`).join('')}</div>
+    <button class="btn" id="abrir">🔓 Abrir candado</button>`;
+  $$('.dial button', z).forEach(b => b.onclick = () => { const i = +b.dataset.i; d[i] = (d[i] + +b.dataset.d + 10) % 10; $$('.dial span', z)[i].textContent = d[i]; });
+  $('#abrir', z).onclick = () => {
+    if (n.r.some(x => dec(x) === d.join(''))) { $('.candado', z).classList.add('abierto'); ganar(); }
+    else fallo($('.diales', z), 'El candado no abre… revisa tus números 🔒');
+  };
+};
+
+RENDER.memoria = (z, n, ganar) => {
+  const cartas = barajar([...n.pares, ...n.pares]);
+  const cols = cartas.length <= 6 ? 3 : 4;
+  z.innerHTML = `<div class="cuenta" id="cuenta"></div><div class="memoria" style="grid-template-columns:repeat(${cols},1fr)">${cartas.map((c, i) => `<button class="carta vuelta" data-i="${i}" data-c="${c}"><span class="cara frente">${c}</span><span class="cara dorso">🎄</span></button>`).join('')}</div>`;
+  const els = $$('.carta', z); let bloqueado = true, abiertas = [], hechas = 0;
+  let t = n.vista; const cuenta = $('#cuenta', z);
+  cuenta.textContent = `¡Memoriza! ${t}`;
+  const iv = setInterval(() => {
+    if (!document.body.contains(z)) return clearInterval(iv);
+    t--; cuenta.textContent = t > 0 ? `¡Memoriza! ${t}` : '¡Encuentra las parejas!';
+    if (t <= 0) { clearInterval(iv); els.forEach(e => e.classList.remove('vuelta')); bloqueado = false; }
+  }, 1000);
+  els.forEach(e => e.onclick = () => {
+    if (bloqueado || e.classList.contains('vuelta')) return;
+    e.classList.add('vuelta'); abiertas.push(e);
+    if (abiertas.length === 2) {
+      bloqueado = true; const [a, b] = abiertas; abiertas = [];
+      if (a.dataset.c === b.dataset.c) { a.classList.add('par'); b.classList.add('par'); hechas++; bloqueado = false; if (hechas === n.pares.length) setTimeout(ganar, 500); }
+      else setTimeout(() => { a.classList.remove('vuelta'); b.classList.remove('vuelta'); bloqueado = false; }, 800);
+    }
+  });
+};
+
+function generarSopa(palabras, N, semilla) {
+  const r = rng(semilla), dirs = [[0, 1], [1, 0], [1, 1], [-1, 1]];
+  const relleno = 'ABCDEFGHIJLMNOPRSTUVZ';
+  for (let intento = 0; intento < 200; intento++) {
+    const g = Array.from({ length: N }, () => Array(N).fill(''));
+    let ok = true;
+    for (const w of [...palabras].sort((a, b) => b.length - a.length)) {
+      let puesto = false;
+      for (let t = 0; t < 400 && !puesto; t++) {
+        const [dr, dc] = dirs[Math.floor(r() * dirs.length)];
+        const r0 = Math.floor(r() * N), c0 = Math.floor(r() * N);
+        const rf = r0 + dr * (w.length - 1), cf = c0 + dc * (w.length - 1);
+        if (rf < 0 || rf >= N || cf < 0 || cf >= N) continue;
+        let cabe = true;
+        for (let k = 0; k < w.length; k++) { const ch = g[r0 + dr * k][c0 + dc * k]; if (ch && ch !== w[k]) { cabe = false; break; } }
+        if (!cabe) continue;
+        for (let k = 0; k < w.length; k++) g[r0 + dr * k][c0 + dc * k] = w[k];
+        puesto = true;
+      }
+      if (!puesto) { ok = false; break; }
+    }
+    if (ok) { for (const fila of g) for (let c = 0; c < N; c++) if (!fila[c]) fila[c] = relleno[Math.floor(r() * relleno.length)]; return g; }
+  }
+  throw new Error('No se pudo generar la sopa');
+}
+
+RENDER.sopa = (z, n, ganar) => {
+  const g = generarSopa(n.palabras, n.tam, n.semilla);
+  const faltan = new Set(n.palabras); let sel = null;
+  z.innerHTML = `<p class="nota">Toca la <b>primera</b> y la <b>última</b> letra de cada palabra.</p>
+    <div class="chips">${n.palabras.map(w => `<span class="chip" data-w="${w}">${w}</span>`).join('')}</div>
+    <div class="sopa" style="--n:${n.tam}">${g.map((fila, r) => fila.map((ch, c) => `<button class="celda" data-r="${r}" data-c="${c}">${ch}</button>`).join('')).join('')}</div>`;
+  const celda = (r, c) => $(`.celda[data-r="${r}"][data-c="${c}"]`, z);
+  $$('.celda', z).forEach(b => b.onclick = () => {
+    const r = +b.dataset.r, c = +b.dataset.c;
+    if (!sel) { sel = [r, c]; b.classList.add('sel'); return; }
+    const [r0, c0] = sel; celda(r0, c0).classList.remove('sel'); sel = null;
+    if (r0 === r && c0 === c) return;
+    const dr = Math.sign(r - r0), dc = Math.sign(c - c0), len = Math.max(Math.abs(r - r0), Math.abs(c - c0)) + 1;
+    const recta = r0 === r || c0 === c || Math.abs(r - r0) === Math.abs(c - c0);
+    let celdas = [], txt = '';
+    if (recta) for (let k = 0; k < len; k++) { celdas.push(celda(r0 + dr * k, c0 + dc * k)); txt += g[r0 + dr * k][c0 + dc * k]; }
+    const inv = [...txt].reverse().join('');
+    const w = [...faltan].find(x => x === txt || x === inv);
+    if (w) {
+      faltan.delete(w); celdas.forEach(e => e.classList.add('ok')); $(`.chip[data-w="${w}"]`, z).classList.add('ok'); sonido('bien');
+      if (!faltan.size) setTimeout(ganar, 500);
+    } else {
+      const marcar = recta ? celdas : [celda(r0, c0), b];
+      marcar.forEach(e => e.classList.add('err')); setTimeout(() => marcar.forEach(e => e.classList.remove('err')), 450);
+    }
+  });
+};
+
+/* Diferencias: escena navideña dibujada en SVG; cada "mod" cambia un detalle */
+const DIFS = {
+  luna: [262, 34], copo: [150, 45], humo: [104, 52], puerta: [72, 155], ventana: [102, 129], estrella: [179, 64],
+  esfera: [200, 156], nariz: [268, 116], bufanda: [262, 126], sombrero: [262, 94], regalo: [131, 174], regalo2: [153, 178],
+};
+function escena(m = new Set()) {
+  const h = k => m.has(k);
+  return `<svg viewBox="0 0 300 220" class="escena">
+  <defs><linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d2a4f"/><stop offset="1" stop-color="#3a6ea5"/></linearGradient></defs>
+  <rect width="300" height="220" fill="url(#cielo)"/>
+  ${h('luna') ? '' : '<circle cx="262" cy="34" r="14" fill="#fdf3c4"/><circle cx="257" cy="30" r="3" fill="#efe2a8"/>'}
+  <g fill="#fff"><circle cx="20" cy="22" r="1.6"/><circle cx="70" cy="30" r="1.3"/><circle cx="118" cy="14" r="1.8"/><circle cx="205" cy="24" r="1.4"/><circle cx="232" cy="60" r="1.2"/><circle cx="40" cy="58" r="1.2"/></g>
+  ${h('copo') ? '' : '<g stroke="#fff" stroke-width="2" stroke-linecap="round" transform="translate(150 45)"><line x1="-8" y1="0" x2="8" y2="0"/><line x1="-4" y1="-7" x2="4" y2="7"/><line x1="-4" y1="7" x2="4" y2="-7"/></g>'}
+  <path d="M0 170 Q75 155 150 168 T300 165 V220 H0Z" fill="#f4f8ff"/>
+  <rect x="95" y="72" width="14" height="26" fill="#6b3a2a"/>
+  ${h('humo') ? '<g fill="#cfd6de" opacity=".85"><circle cx="102" cy="62" r="5"/><circle cx="108" cy="51" r="6"/><circle cx="101" cy="40" r="7"/></g>' : ''}
+  <rect x="25" y="105" width="95" height="70" fill="#a0522d"/>
+  <polygon points="16,108 72,66 129,108" fill="#7a1f1f"/>
+  <polyline points="16,108 72,66 129,108" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="62" y="135" width="20" height="40" rx="2" fill="${h('puerta') ? '#1e7d4f' : '#c8102e'}"/><circle cx="78" cy="156" r="1.8" fill="#f4c430"/>
+  <rect x="34" y="120" width="20" height="18" fill="#ffd966" stroke="#5a2e17" stroke-width="2"/><line x1="44" y1="120" x2="44" y2="138" stroke="#5a2e17" stroke-width="2"/>
+  ${h('ventana') ? '<rect x="92" y="120" width="20" height="18" fill="#ffd966" stroke="#5a2e17" stroke-width="2"/><line x1="102" y1="120" x2="102" y2="138" stroke="#5a2e17" stroke-width="2"/>' : ''}
+  <rect x="172" y="160" width="14" height="16" fill="#5b3a1e"/>
+  <polygon points="179,72 142,122 216,122" fill="#1a7f45"/><polygon points="179,96 134,146 224,146" fill="#167a40"/><polygon points="179,120 126,168 232,168" fill="#0f6b3c"/>
+  ${h('estrella') ? '' : '<polygon points="179,54 182,62 191,62 184,67 187,75 179,70 171,75 174,67 167,62 176,62" fill="#f4c430"/>'}
+  <circle cx="168" cy="110" r="4" fill="#c8102e"/><circle cx="190" cy="104" r="3.5" fill="#fff"/><circle cx="160" cy="138" r="4.5" fill="#3a7bd5"/><circle cx="196" cy="134" r="4.5" fill="#f4c430"/>
+  <circle cx="200" cy="156" r="5" fill="${h('esfera') ? '#3a7bd5' : '#c8102e'}"/><circle cx="150" cy="160" r="4.5" fill="#f4c430"/><circle cx="180" cy="148" r="4" fill="#c8102e"/>
+  <circle cx="262" cy="170" r="20" fill="#fff" stroke="#dde4ee"/><circle cx="262" cy="140" r="15" fill="#fff" stroke="#dde4ee"/><circle cx="262" cy="114" r="11" fill="#fff" stroke="#dde4ee"/>
+  <circle cx="258" cy="111" r="1.6" fill="#222"/><circle cx="266" cy="111" r="1.6" fill="#222"/>
+  ${h('nariz') ? '' : '<polygon points="262,114 275,116.5 262,118" fill="#f08a24"/>'}
+  <rect x="250" y="123" width="24" height="6" rx="2" fill="${h('bufanda') ? '#1e7d4f' : '#c8102e'}"/>
+  <circle cx="262" cy="137" r="1.8" fill="#222"/><circle cx="262" cy="146" r="1.8" fill="#222"/>
+  <rect x="249" y="102" width="26" height="4" fill="${h('sombrero') ? '#c8102e' : '#222'}"/><rect x="254" y="86" width="16" height="17" fill="${h('sombrero') ? '#c8102e' : '#222'}"/>
+  <rect x="120" y="165" width="22" height="18" fill="${h('regalo') ? '#3a7bd5' : '#c8102e'}"/><rect x="129" y="165" width="4" height="18" fill="#f4c430"/>
+  ${h('regalo2') ? '' : '<rect x="145" y="172" width="16" height="13" fill="#f4c430"/><rect x="151" y="172" width="4" height="13" fill="#c8102e"/>'}
+  <g class="marcas"></g></svg>`;
+}
+
+RENDER.diferencias = (z, n, ganar) => {
+  const faltan = new Set(n.difs);
+  z.innerHTML = `<div class="dif-lbl"><span>Original</span></div><div class="dif-zona" id="orig">${escena()}</div>
+    <div class="dif-lbl"><span>👆 Toca aquí las diferencias</span><span id="cont">0 / ${n.difs.length}</span></div>
+    <div class="dif-zona" id="mod">${escena(new Set(n.difs))}</div>`;
+  const svgMod = $('#mod svg', z), svgOrig = $('#orig svg', z);
+  const marca = (svg, x, y, cls) => { $('.marcas', svg).insertAdjacentHTML('beforeend', cls === 'ok' ? `<circle cx="${x}" cy="${y}" r="15" fill="none" stroke="#f4c430" stroke-width="3.5"/>` : `<g class="x" stroke="#ff3b3b" stroke-width="4" stroke-linecap="round"><line x1="${x - 7}" y1="${y - 7}" x2="${x + 7}" y2="${y + 7}"/><line x1="${x + 7}" y1="${y - 7}" x2="${x - 7}" y2="${y + 7}"/></g>`); };
+  svgMod.addEventListener('click', e => {
+    const r = svgMod.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width * 300, y = (e.clientY - r.top) / r.height * 220;
+    let mejor = null, dist = 1e9;
+    faltan.forEach(k => { const [dx, dy] = DIFS[k]; const d = Math.hypot(dx - x, dy - y); if (d < dist) { dist = d; mejor = k; } });
+    if (mejor && dist < 22) {
+      faltan.delete(mejor); const [dx, dy] = DIFS[mejor];
+      marca(svgMod, dx, dy, 'ok'); marca(svgOrig, dx, dy, 'ok'); sonido('bien');
+      $('#cont', z).textContent = `${n.difs.length - faltan.size} / ${n.difs.length}`;
+      if (!faltan.size) setTimeout(ganar, 600);
+    } else {
+      marca(svgMod, x, y, 'x'); sonido('mal'); setTimeout(() => { const xs = $$('.x', svgMod); xs.length && xs[0].remove(); }, 600);
+    }
+  });
+};
+
+/* Ruleta */
+const CATS = [['🧩', 'Adivinanza'], ['🌎', 'Cultura general'], ['➗', 'Matemática'], ['🔤', 'Descifra la palabra'], ['🔍', 'Encuentra el elemento'], ['🧠', 'Lógica']];
+RENDER.ruleta = (z, n, ganar) => {
+  const col = ['#c8102e', '#1e7d4f', '#f4c430', '#c8102e', '#1e7d4f', '#f4c430'];
+  const p = a => { const rad = a * Math.PI / 180; return `${(100 + 95 * Math.sin(rad)).toFixed(2)} ${(100 - 95 * Math.cos(rad)).toFixed(2)}`; };
+  const segs = CATS.map(([e], i) => {
+    const a1 = i * 60, a2 = a1 + 60, am = (a1 + 30) * Math.PI / 180;
+    return `<path d="M100 100 L${p(a1)} A95 95 0 0 1 ${p(a2)} Z" fill="${col[i]}" stroke="#fff" stroke-width="2"/><text x="${100 + 62 * Math.sin(am)}" y="${100 - 62 * Math.cos(am)}" font-size="26" text-anchor="middle" dominant-baseline="central">${e}</text>`;
+  }).join('');
+  z.innerHTML = `<div class="ruleta-box"><div class="puntero"></div><svg viewBox="0 0 200 200" id="rueda"><circle cx="100" cy="100" r="99" fill="#f4c430"/>${segs}<circle cx="100" cy="100" r="14" fill="#fff" stroke="#f4c430" stroke-width="4"/></svg></div>
+    <button class="btn oro" id="girar">🎡 ¡Girar!</button><div id="sub"></div>`;
+  let rot = 0;
+  $('#girar', z).onclick = () => {
+    const btn = $('#girar', z); btn.disabled = true; $('#sub', z).innerHTML = '';
+    const i = Math.floor(Math.random() * 6);
+    const deseado = (360 - (i * 60 + 30)) % 360, actual = rot % 360;
+    rot += 1800 + (deseado - actual + 360) % 360;
+    $('#rueda', z).style.transform = `rotate(${rot}deg)`;
+    setTimeout(() => {
+      const reto = n.retos[i];
+      $('#sub', z).innerHTML = `<div class="cat">${CATS[i][0]} ${CATS[i][1]}</div><h2 class="peq">${reto.enunciado}</h2><div id="subzona"></div>`;
+      RENDER[reto.tipo]($('#subzona', z), reto, ganar);
+      btn.textContent = '🎡 Girar otra vez'; btn.disabled = false;
+      $('#sub', z).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 4200);
+  };
+};
+
+/* ---------- panel del anfitrión (#organizador) ---------- */
+let PIN = '';
+async function vistaAdmin() {
+  if (!PIN) {
+    pantalla(`
+      <div class="topbar"><a href="#juego" style="color:#fff;font-weight:800">← Inicio</a><span>Anfitrión</span></div>
+      ${bannerDemo()}
+      <section class="card"><h2>Panel del anfitrión</h2>
+        <form class="resp" id="fpin"><input type="password" inputmode="text" placeholder="PIN" autocomplete="current-password" required><button class="btn">Entrar</button></form>
+      </section>`);
+    $('#fpin').onsubmit = async e => {
+      e.preventDefault(); const v = $('#fpin input').value.trim();
+      try { await api('admin', { pin: v }); PIN = v; if (location.hash === '#organizador') vistaAdmin(); } catch (err) { fallo($('#fpin input'), err.message); }
+    };
+    return;
+  }
+  let datos;
+  try { datos = await api('admin', { pin: PIN }); } catch (e) { if (e.status === 403) PIN = ''; return location.hash === '#organizador' && vistaError(e.message, vistaAdmin); }
+  if (location.hash !== '#organizador') return;
+  const ver = !!vistaAdmin.ver;
+  const lista = datos.participantes;
+  const hechos = lista.filter(f => f.asignado).length, conectados = lista.filter(f => f.ocupado).length;
+  pantalla(`
+    <div class="topbar"><a href="#juego" style="color:#fff;font-weight:800">← Inicio</a><span>Anfitrión</span></div>
+    ${bannerDemo()}
+    <section class="card">
+      <h2>Panel del anfitrión</h2>
+      <p class="desc"><b>${hechos} de ${lista.length}</b> ya sortearon · ${conectados} celulares conectados</p>
+      ${datos.inicio ? `<p class="nota">Inicio: ${new Date(datos.inicio).toLocaleString('es-PE')}</p>` : ''}
+      <div class="fila"><button class="btn sec chico" id="toggle">${ver ? '🙈 Ocultar parejas' : '👁 Mostrar parejas'}</button><button class="btn sec chico" id="refrescar">🔄 Actualizar</button></div>
+      <table class="tabla-admin">
+        <tr><th>#</th><th>Nombre</th><th>📱</th><th>Le regala a</th><th></th></tr>
+        ${lista.map(f => `<tr>
+          <td>${f.orden ?? ''}</td>
+          <td><b>${esc(f.nombre)}</b>${f.sorteado_en ? `<br><small>${esc(String(f.sorteado_en).slice(11, 16) || f.sorteado_en)}</small>` : ''}</td>
+          <td>${f.ocupado ? '✅' : '—'}</td>
+          <td>${f.asignado ? (ver ? `<b>${esc(f.asignado)}</b>` : '••••••') : '<span class="nota">pendiente</span>'}</td>
+          <td><button class="link osc" data-menu="${esc(f.nombre)}">⋯</button></td></tr>`).join('')}
+      </table>
+      <p class="nota">Se actualiza solo cada 10 segundos.</p>
+    </section>
+    <section class="card">
+      <h2 class="peq">Zona de peligro</h2>
+      <button class="btn sec" id="reiniciar">♻️ Reiniciar todo el sorteo</button>
+    </section>`);
+  $('#toggle').onclick = () => { vistaAdmin.ver = !ver; vistaAdmin(); };
+  $('#refrescar').onclick = vistaAdmin;
+  $$('[data-menu]').forEach(b => b.onclick = async () => {
+    const n = b.dataset.menu;
+    const i = await modal(`<h3>${esc(n)}</h3><p><b>Liberar celular:</b> si entró con el nombre equivocado o cambió de celular.<br><b>Anular sorteo:</b> su persona vuelve al bombo y puede sortear otra vez.</p>`, [{ t: 'Cerrar', cls: 'sec' }, { t: 'Liberar', cls: 'verde' }, { t: 'Anular' }]);
+    if (!i) return;
+    if (i === 2) { const c = await modal(`<h3>¿Anular el sorteo de ${esc(n)}?</h3><p>Esto no se puede deshacer.</p>`, [{ t: 'No', cls: 'sec' }, { t: 'Sí, anular' }]); if (c !== 1) return; }
+    try { await api(i === 1 ? 'liberar' : 'anular', { pin: PIN, nombre: n }); toast('Listo ✅'); } catch (e) { toast(e.message); }
+    vistaAdmin();
+  });
+  $('#reiniciar').onclick = async () => {
+    const a = await modal('<h3>¿Reiniciar TODO?</h3><p>Se borran todos los sorteos y celulares vinculados.</p>', [{ t: 'Cancelar', cls: 'sec' }, { t: 'Reiniciar' }]);
+    if (a !== 1) return;
+    const b = await modal('<h3>¿Seguro, seguro?</h3><p>Todos tendrán que volver a sortear.</p>', [{ t: 'No', cls: 'sec' }, { t: 'Sí, borrar todo' }]);
+    if (b !== 1) return;
+    try { await api('reiniciar', { pin: PIN }); toast('Sorteo reiniciado'); } catch (e) { toast(e.message); }
+    vistaAdmin();
+  };
+  clearTimeout(vistaAdmin.t);
+  vistaAdmin.t = setTimeout(() => { if (location.hash === '#organizador' && $('.tabla-admin') && $('#modal').hidden) vistaAdmin(); }, 10000);
+}
+
+/* ---------- router ---------- */
+let RUTA_ID = 0; // evita que una respuesta tardía pise una pantalla más nueva
+async function ruta() {
+  const id = ++RUTA_ID;
+  const h = location.hash.slice(1);
+  if (h === 'organizador') return vistaAdmin();
+  vistaCargando();
+  try { await cargarEstado(); } catch (e) { if (id === RUTA_ID) vistaError(e.message); return; }
+  if (id !== RUTA_ID) return;
+  const enBase = ESTADO.participantes.map(x => x.nombre);
+  const faltan = NOMBRES.filter(n => !enBase.includes(n));
+  if (faltan.length) return vistaError(`La base de datos no tiene estos nombres (o tienen la tilde mal guardada): ${faltan.join(', ')}. Reimporta instalar.sql en phpMyAdmin.`);
+  if (ESTADO.inicio && ESTADO.inicio > ahoraServidor()) return vistaCuenta();
+  const yo = store.get('as_yo');
+  if (yo && NOMBRES.includes(yo)) return vistaHub(yo);
+  vistaInicio();
+}
+addEventListener('hashchange', ruta);
+ruta();
+
+</script>
+</body>
+</html>

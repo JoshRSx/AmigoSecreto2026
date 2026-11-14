@@ -1,6 +1,22 @@
 # 🎄 Amigo Secreto Familiar 2026
 
-App web móvil: cada participante juega 3 rondas de su minijuego, gana 3 pistas y adivina quién es su amigo secreto.
+App web móvil para hacer **el sorteo jugando**: cada participante elige su nombre, supera 3 desafíos de su minijuego y el servidor le asigna al azar a quién le regala (sin repetir, sin que le toque a sí mismo). Luego le avisa al anfitrión por WhatsApp.
+
+## Versión con servidor (PHP + MySQL) — la principal
+
+Todo está en `hosting/`. Instrucciones paso a paso en [`hosting/LEEME.txt`](hosting/LEEME.txt).
+
+- `api.php`: sorteo con transacción y bloqueo (`SELECT … FOR UPDATE`) para sorteos simultáneos, regla anti-bloqueo para el último par, un nombre por celular.
+- `/#organizador`: panel con PIN (quién terminó, orden, parejas ocultas por defecto, liberar celular, anular sorteo, reiniciar).
+- `#demo`: simula el servidor en el navegador para probar sin hosting.
+
+Desarrollo: edita `src/` y ejecuta `node build.js` → `hosting/index.html`. Pruebas: `test/estres.py` (sorteos concurrentes), `test/e2e_php.py`, `test/demo_full.py`.
+
+---
+
+## Versión anterior sin servidor (Netlify, con pistas) — respaldo
+
+`public/` + `netlify.toml` conservan la versión con pistas escritas por cada regalador. Ya no se regenera con `build.js`.
 
 ## Estructura
 

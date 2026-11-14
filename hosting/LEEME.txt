@@ -1,0 +1,43 @@
+AMIGO SECRETO FAMILIAR 2026 — INSTALACIÓN EN EL HOSTING (PHP + MySQL)
+=====================================================================
+
+Archivos:
+  index.html     la app
+  api.php        el sorteo (servidor)
+  config.php     datos de la base, PIN, hora de inicio y tu WhatsApp
+  instalar.sql   crea la tabla con los 14 participantes
+  .htaccess      protege config.php e instalar.sql
+
+1) BASE DE DATOS
+   - En cPanel → "Bases de datos MySQL": crea una base y un usuario, y dale TODOS
+     los privilegios sobre esa base. (Si ya tienes una base, puedes usarla.)
+   - En phpMyAdmin: selecciona la base → pestaña "Importar" → instalar.sql → Continuar.
+   - Debe aparecer la tabla "participantes" con 14 filas. Revisa que "Noemí" tenga la tilde bien.
+
+2) CONFIGURACIÓN (config.php)
+   - db_name, db_user, db_pass: los de tu base. db_host casi siempre es 'localhost'.
+   - pin_admin: un PIN solo para ti.
+   - hora_inicio: ej. '2026-11-15 16:00' (hora de Lima). Antes de esa hora todos ven una
+     cuenta regresiva y nadie puede sortear. Vacío = abierto ya.
+   - whatsapp_anfitrion: tu número con código de país, sin + (ej. '51987654321').
+   ⚠️ NO subas tu config.php con la contraseña real a GitHub (el repo es público).
+
+3) SUBIR ARCHIVOS
+   - Por el Administrador de archivos de cPanel o por FTP, sube los 5 archivos a una carpeta,
+     por ejemplo public_html/amigo/  →  https://tudominio.com/amigo/
+   - .htaccess empieza con punto: en el Administrador de archivos activa "Mostrar archivos ocultos".
+
+4) PROBAR (antes del domingo)
+   - Abre https://tudominio.com/amigo/api.php → debe responder {"ok":true,...}
+     Si dice "No se pudo conectar a la base de datos", revisa config.php.
+   - Abre https://tudominio.com/amigo/config.php → debe salir en blanco o "Forbidden" (correcto).
+   - Abre la app, entra con un nombre, juega y sortea. Luego en /#organizador (con tu PIN)
+     usa "Reiniciar todo el sorteo" para dejarlo limpio.
+
+5) EL DOMINGO
+   - Comparte el link. Cada uno elige su nombre, juega sus 3 desafíos y sortea.
+   - Te avisan por WhatsApp a quién les tocó. En /#organizador ves quién falta.
+   - Si alguien se equivocó de nombre o cambió de celular: ⋯ → "Liberar".
+   - Si hay que repetir el sorteo de alguien: ⋯ → "Anular" (su persona vuelve al bombo).
+
+Para probar sin servidor: abre index.html con #demo al final (el PIN del panel en demo es: demo).

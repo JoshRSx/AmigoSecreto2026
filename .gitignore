@@ -1,3 +1,4 @@
 test/srv/
 test/*.png
 node_modules/
+test/php/

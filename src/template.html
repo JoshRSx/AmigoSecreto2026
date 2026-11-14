@@ -173,6 +173,17 @@ textarea{font-size:16px;font-weight:700;min-height:70px;resize:vertical}
 .campo small{display:block;color:var(--gris);font-weight:700;margin-top:4px}
 .salida{font:700 12px monospace;min-height:110px;word-break:break-all}
 .fila{display:flex;gap:10px;margin-top:10px}
+.nombre[data-ocupado]{opacity:.6}
+.nombre .est{margin-left:auto;font-size:15px}
+.tragamonedas{font-family:'Mountains of Christmas',Georgia,serif;font-size:52px;color:var(--rojo);height:84px;display:grid;place-items:center;border:4px solid var(--oro);border-radius:18px;background:#fff;margin:14px 0;overflow:hidden;box-shadow:inset 0 6px 10px rgba(0,0,0,.08)}
+.final-nombre.oculto{filter:blur(14px);user-select:none}
+.final-nombre{transition:filter .3s}
+.tabla-admin{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+.tabla-admin th{text-align:left;color:var(--gris);font-size:12px;text-transform:uppercase;padding:6px 4px;border-bottom:2px solid #ead9bf}
+.tabla-admin td{padding:8px 4px;border-bottom:1px solid #f0e2cb;vertical-align:middle}
+.tabla-admin small{color:var(--gris)}
+.tabla-admin .link{font-size:22px;text-decoration:none}
+.fila .btn.chico{flex:1}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -181,13 +192,7 @@ textarea{font-size:16px;font-weight:700;min-height:70px;resize:vertical}
 <div id="app"></div>
 <div id="toast"></div>
 <div id="modal" hidden></div>
-<!-- Configuración del anfitrión (la genera la pantalla #organizador) -->
-<script src="config.js"></script>
 <script>
-const CONFIG = window.AMIGO_CONFIG || {};
-const PAQUETE = CONFIG.paquete || "";
-const HORA_INICIO = CONFIG.horaInicio ? new Date(CONFIG.horaInicio) : null;
-
 const DATA = /*__DATA__*/null;
 
 /* ---------- utilidades ---------- */
@@ -276,214 +281,7 @@ const SVG_CANDADO = `<svg viewBox="0 0 90 100"><path class="arco" d="M24 46 V30 
   })();
 })();
 
-/* ---------- pistas (paquete del anfitrión) ---------- */
-// estado: 'real' (hay pistas cargadas), 'demo' (pistas de prueba) o 'libre' (sin pistas: revelación en persona)
-// En 'real', quien no tenga pistas también juega en modo libre.
-function cargarPares() {
-  const paq = PAQUETE || store.get('as_paquete_prueba') || '';
-  if (paq) { try { return { estado: 'real', pares: JSON.parse(dec(paq)).pares || {} }; } catch (e) { console.warn('Paquete inválido', e); } }
-  if (store.get('as_demo')) {
-    const pares = {};
-    NOMBRES.forEach((n, i) => { const de = NOMBRES[(i + 5) % NOMBRES.length]; pares[n] = { de, pistas: pistasAuto(de) }; });
-    return { estado: 'demo', pares };
-  }
-  return { estado: 'libre', pares: {} };
-}
-// Pistas automáticas a partir del nombre del regalador (si deja alguna en blanco)
-function pistasAuto(n) {
-  const L = [...n.normalize('NFC')];
-  return [`Su nombre tiene ${L.length} letras.`, `Su nombre termina en «${L[L.length - 1].toUpperCase()}».`, `Su nombre empieza con «${L[0].toUpperCase()}».`];
-}
-const MENSAJES_LIBRES = ['¡Eres una máquina! 🎉 Sigue así.', '¡Toda la familia te aplaude! 👏', '¡Nivel experto desbloqueado! 🧠'];
-let ESTADO, PARES, DEMO;
-function recargar() { ({ estado: ESTADO, pares: PARES } = cargarPares()); DEMO = ESTADO === 'demo'; }
-recargar();
-const bannerDemo = () => DEMO ? `<div class="banner">🧪 MODO DEMO · las pistas son de prueba <button class="link osc" id="salirDemo" style="margin-left:6px">Salir</button></div>` : '';
-document.addEventListener('click', e => { if (e.target.id === 'salirDemo') { store.del('as_demo'); store.del('as_yo'); recargar(); if (location.hash === '#demo') location.hash = 'juego'; else ruta(); } });
-
-/* ---------- progreso (separado entre demo y juego real) ---------- */
-const nuevoProg = () => ({ inicio: null, rondas: [false, false, false], intentos: DATA.intentos, acerto: false, fin: null });
-const claveProg = yo => 'as_prog_' + (DEMO ? 'demo_' : '') + yo;
-const prog = yo => store.get(claveProg(yo)) || nuevoProg();
-const guardar = (yo, p) => store.set(claveProg(yo), p);
-
-/* ---------- vistas ---------- */
-function pantalla(html) { app.innerHTML = SVG_GUIRNALDA + html; scrollTo(0, 0); }
-
-function vistaInicio() {
-  pantalla(`
-    <header class="hero">${SVG_ARBOL}<h1>Amigo Secreto</h1><p class="sub">Familiar · Navidad 2026</p></header>
-    ${bannerDemo()}
-    <section class="card"><h2>¿Quién eres?</h2>
-      <div class="nombres">${DATA.participantes.map(p => `<button class="nombre" data-n="${esc(p.nombre)}"><span class="emo">${p.icono}</span>${esc(p.nombre)}</button>`).join('')}</div>
-    </section>
-    <p class="enlace"><a href="#pistas">✍️ Escribe las pistas para tu amigo secreto</a></p>`);
-  $$('.nombre').forEach(b => b.onclick = async () => {
-    const n = b.dataset.n;
-    const i = await modal(`<h3>¿Eres ${esc(n)}?</h3><p>Vas a jugar con este nombre en este celular.</p>`, [{ t: 'No', cls: 'sec' }, { t: '¡Sí, soy yo!', cls: 'verde' }]);
-    if (i === 1) { store.set('as_yo', n); vistaHub(n); }
-  });
-}
-
-function vistaCuenta() {
-  const pintar = () => {
-    if (!$('#reloj')) return clearInterval(vistaCuenta.iv);
-    const ms = HORA_INICIO - Date.now();
-    if (ms <= 0) { clearInterval(vistaCuenta.iv); return ruta(); }
-    const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60;
-    const el = $('#reloj'); if (el) el.textContent = `${d ? d + 'd ' : ''}${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
-  };
-  pantalla(`
-    <header class="hero">${SVG_ARBOL}<h1>Amigo Secreto</h1><p class="sub">Familiar · Navidad 2026</p></header>
-    <section class="card centro">
-      <h2>El juego empieza en…</h2>
-      <div class="final-nombre" id="reloj" style="font-family:'Nunito',system-ui,sans-serif;font-weight:900;font-size:44px">--:--:--</div>
-      <p class="desc">${HORA_INICIO.toLocaleString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>
-      <p style="margin:16px 0 0"><a class="btn sec" style="display:block;text-decoration:none" href="#pistas">✍️ Escribir mis pistas</a></p>
-    </section>`);
-  clearInterval(vistaCuenta.iv); pintar(); vistaCuenta.iv = setInterval(pintar, 1000);
-}
-
-function vistaHub(yo) {
-  const P = participante(yo), p = prog(yo), par = PARES[yo];
-  if (!p.inicio) { p.inicio = Date.now(); guardar(yo, p); }
-  const rondas = [0, 1, 2].map(i => {
-    const hecha = p.rondas[i], abierta = i === 0 || p.rondas[i - 1];
-    return `<div class="ronda ${hecha ? 'hecha' : abierta ? 'abierta' : 'bloq'}">
-      <div class="ronda-num">${hecha ? '✅' : abierta ? '🎁' : '🔒'}</div>
-      <div class="ronda-txt"><b>Ronda ${i + 1}</b><small>${par ? TIPOS_PISTA[i] : 'Desafío ' + (i + 1)}</small>${hecha ? `<div class="pista">${par ? `“${esc(par.pistas[i])}”` : '🎉 ¡Superada!'}</div>` : ''}</div>
-      ${!hecha && abierta ? `<button class="btn chico" data-ronda="${i}">Jugar</button>` : ''}</div>`;
-  }).join('');
-  const todas = p.rondas.every(Boolean);
-  let final = '';
-  if (todas && !par) final = `<button class="btn oro" id="verlibre">🎁 ¡Terminé! Ver revelación</button>`;
-  else if (todas) {
-    if (p.acerto) final = `<button class="btn oro" id="verfinal">🎉 Ver mi resultado</button>`;
-    else if (p.intentos > 0) final = `<button class="btn oro" id="adivinar">🎁 ¡Descubre a tu amigo secreto!</button>`;
-    else final = `<div class="banner">Se acabaron tus intentos 😅 Espera la revelación del anfitrión.</div>`;
-  }
-  pantalla(`
-    <div class="saludo"><h1>¡Hola, ${esc(yo)}!</h1></div>
-    ${bannerDemo()}
-    <section class="card">
-      <div class="juego-tit">${P.icono} Tu juego</div>
-      <h2>${esc(P.juego)}</h2>
-      <p class="desc">${esc(P.desc)} ${par ? 'Supera cada ronda para ganar una pista sobre quién es tu amigo secreto.' : 'Supera los 3 desafíos lo más rápido que puedas. Al final, tu amigo secreto se revela en persona.'}</p>
-      ${rondas}
-      ${final}
-    </section>
-    <p class="enlace"><button class="link" id="cambiar">¿No eres ${esc(yo)}? Cambiar</button></p>`);
-  $$('[data-ronda]').forEach(b => b.onclick = () => vistaReto(yo, +b.dataset.ronda));
-  $('#adivinar') && ($('#adivinar').onclick = () => vistaAdivinar(yo));
-  $('#verfinal') && ($('#verfinal').onclick = () => vistaFinal(yo));
-  $('#verlibre') && ($('#verlibre').onclick = () => vistaFinalLibre(yo));
-  $('#cambiar').onclick = async () => {
-    const i = await modal(`<h3>¿Cambiar de jugador?</h3><p>Tu progreso se guarda en este celular.</p>`, [{ t: 'Cancelar', cls: 'sec' }, { t: 'Cambiar' }]);
-    if (i === 1) { store.del('as_yo'); vistaInicio(); }
-  };
-}
-
-function vistaReto(yo, i) {
-  const P = participante(yo), nivel = P.niveles[i];
-  pantalla(`
-    <div class="topbar"><button id="volver">← Volver</button><span>Ronda ${i + 1} de 3</span></div>
-    <section class="card reto">
-      <div class="juego-tit">${P.icono} ${esc(P.juego)}</div>
-      <h2>${nivel.enunciado}</h2>
-      <div id="zona"></div>
-      ${nivel.ayuda ? `<button class="ayuda-btn" id="ayudaBtn">💡 Pedir ayuda</button><p class="ayuda" id="ayuda" hidden>${nivel.ayuda}</p>` : ''}
-    </section>`);
-  $('#volver').onclick = () => vistaHub(yo);
-  if (nivel.ayuda) $('#ayudaBtn').onclick = () => { $('#ayuda').hidden = false; $('#ayudaBtn').remove(); };
-  RENDER[nivel.tipo]($('#zona'), nivel, () => completarRonda(yo, i));
-}
-
-function completarRonda(yo, i) {
-  const p = prog(yo); p.rondas[i] = true;
-  if (!PARES[yo] && p.rondas.every(Boolean) && !p.fin) p.fin = Date.now();
-  guardar(yo, p);
-  sonido('bien'); fiesta(false);
-  setTimeout(() => vistaRegalo(yo, i), 700);
-}
-
-function vistaRegalo(yo, i) {
-  const par = PARES[yo];
-  const pista = par ? par.pistas[i] : MENSAJES_LIBRES[i];
-  pantalla(`
-    <section class="card centro">
-      <h2>¡Superaste la ronda ${i + 1}!</h2>
-      <p class="desc">Toca el regalo para abrir${par ? ' tu pista' : 'lo'}</p>
-      <button class="regalo-btn" id="regalo" aria-label="Abrir regalo">${SVG_REGALO}</button>
-      <div class="nota">${par ? TIPOS_PISTA[i] : ''}</div>
-      <div class="pista-grande" id="pista">${par ? `“${esc(pista)}”` : esc(pista)}</div>
-      <button class="btn verde" id="seguir" hidden>Continuar</button>
-    </section>`);
-  $('#regalo').onclick = () => {
-    if ($('#regalo').classList.contains('abierto')) return;
-    $('#regalo').classList.add('abierto'); sonido('bien'); fiesta(false);
-    $('#pista').classList.add('ver'); $('#seguir').hidden = false;
-  };
-  $('#seguir').onclick = () => vistaHub(yo);
-}
-
-function vistaAdivinar(yo) {
-  const par = PARES[yo], p = prog(yo);
-  let elegido = null;
-  pantalla(`
-    <div class="topbar"><button id="volver">← Volver</button><span>Intentos: ${p.intentos}</span></div>
-    <section class="card">
-      <h2>¿Quién es tu amigo secreto?</h2>
-      <p class="desc">Tus pistas:</p>
-      <ul class="lista">${(par?.pistas || []).map(t => `<li><b>${esc(t)}</b></li>`).join('')}</ul>
-      <div class="nombres">${NOMBRES.filter(n => n !== yo).map(n => `<button class="nombre" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div>
-      <div style="margin-top:14px"><button class="btn oro" id="confirmar" disabled>Elegir</button></div>
-    </section>`);
-  $('#volver').onclick = () => vistaHub(yo);
-  $$('.nombre').forEach(b => b.onclick = () => { $$('.nombre').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); elegido = b.dataset.n; $('#confirmar').disabled = false; });
-  $('#confirmar').onclick = async () => {
-    const i = await modal(`<h3>¿Seguro?</h3><p>¿Tu amigo secreto es <b>${esc(elegido)}</b>?</p>`, [{ t: 'Pensarlo', cls: 'sec' }, { t: '¡Sí!', cls: 'verde' }]);
-    if (i !== 1) return;
-    const q = prog(yo);
-    if (par && norm(elegido) === norm(par.de)) { q.acerto = true; q.fin = Date.now(); guardar(yo, q); vistaFinal(yo); }
-    else {
-      q.intentos--; guardar(yo, q); sonido('mal');
-      await modal(`<h3>¡No es ${esc(elegido)}!</h3><p>${q.intentos > 0 ? `Te queda${q.intentos > 1 ? 'n' : ''} ${q.intentos} intento${q.intentos > 1 ? 's' : ''}.` : 'Se acabaron tus intentos. Espera la revelación del anfitrión.'}</p>`, [{ t: 'OK' }]);
-      q.intentos > 0 ? vistaAdivinar(yo) : vistaHub(yo);
-    }
-  };
-}
-
-function vistaFinal(yo) {
-  const p = prog(yo), par = PARES[yo];
-  pantalla(`
-    <section class="card centro">
-      <p class="juego-tit">🎄 ¡Lo descubriste, ${esc(yo)}! 🎄</p>
-      <h2 style="margin-bottom:0">Tu amigo secreto es…</h2>
-      <div class="final-nombre">${esc(par?.de || '?')}</div>
-      ${SVG_REGALO.replace('class="regalo-svg"', 'class="regalo-svg" style="width:110px;height:110px"')}
-      <p class="tiempo">⏱️ Tiempo: ${fmtTiempo((p.fin || Date.now()) - p.inicio)}</p>
-      <p class="desc">¡Muestra esta pantalla a todos y ve por tu regalo! 🎁</p>
-      <button class="btn verde" id="otra">🎉 Más confeti</button>
-    </section>`);
-  sonido('final'); fiesta(true);
-  $('#otra').onclick = () => { sonido('final'); fiesta(true); };
-}
-
-function vistaFinalLibre(yo) {
-  const p = prog(yo);
-  pantalla(`
-    <section class="card centro">
-      <p class="juego-tit">🎄 ¡Completaste los 3 desafíos, ${esc(yo)}! 🎄</p>
-      <h2>¡Hora de la revelación!</h2>
-      ${SVG_REGALO.replace('class="regalo-svg"', 'class="regalo-svg" style="width:120px;height:120px"')}
-      <p class="tiempo">⏱️ Tiempo: ${fmtTiempo((p.fin || Date.now()) - p.inicio)}</p>
-      <div class="final-nombre" style="font-size:40px">¿Quién crees que es?</div>
-      <p class="desc">Dilo en voz alta frente a todos… ¡y que tu amigo secreto se revele! 🎁</p>
-      <button class="btn verde" id="otra">🎉 Más confeti</button>
-    </section>`);
-  sonido('final'); fiesta(true);
-  $('#otra').onclick = () => { sonido('final'); fiesta(true); };
-}
+/*__PARTE_SERVIDOR__*/
 
 /* ---------- motores de juego ---------- */
 const RENDER = {};
@@ -681,103 +479,7 @@ RENDER.ruleta = (z, n, ganar) => {
   };
 };
 
-/* ---------- escribir pistas (lo hace cada regalador) ---------- */
-function vistaEscribir() {
-  const opts = (excluir) => `<option value="">— Elige —</option>` + NOMBRES.filter(n => n !== excluir).map(n => `<option>${esc(n)}</option>`).join('');
-  pantalla(`
-    <div class="topbar"><a href="#juego" style="color:#fff;font-weight:800">← Inicio</a><span>Pistas</span></div>
-    <section class="card">
-      <h2>Escribe tus pistas</h2>
-      <p class="desc">Tú eres el <b>regalador</b>. Escribe 3 pistas <b>sobre ti</b> para que tu amigo secreto te descubra. Nadie más las verá: se convierten en un código que envías al anfitrión.</p><p class="nota">Las pistas son opcionales: si dejas alguna en blanco, la app la crea sola con tu nombre (cuántas letras tiene, en qué letra termina, con cuál empieza).</p>
-      <div class="campo"><label>1. ¿Quién eres tú?</label><select id="de">${opts()}</select></div>
-      <div class="campo"><label>2. ¿A quién le regalas?</label><select id="para">${opts()}</select></div>
-      <div class="campo"><label>Pista 1 · Característica general <small style="display:inline">(opcional)</small></label><textarea id="p1" maxlength="160" placeholder="Ej.: Es una de las personas más altas de la familia."></textarea></div>
-      <div class="campo"><label>Pista 2 · Un gusto o afición <small style="display:inline">(opcional)</small></label><textarea id="p2" maxlength="160" placeholder="Ej.: Le encanta cocinar los domingos."></textarea></div>
-      <div class="campo"><label>Pista 3 · Algo más específico <small style="display:inline">(opcional)</small></label><textarea id="p3" maxlength="160" placeholder="Ej.: Siempre llega con su taza de café."></textarea><small>Ojo: la inicial ayuda poco con la J y la G (hay varios Joshua, Josefina, Juliett, Jhency, Gabriel, Guillermo).</small></div>
-      <button class="btn verde" id="generar">Generar mi código</button>
-      <div id="resultado"></div>
-    </section>`);
-  $('#de').onchange = () => { const v = $('#para').value; $('#para').innerHTML = opts($('#de').value); if (v !== $('#de').value) $('#para').value = v; };
-  $('#generar').onclick = () => {
-    const de = $('#de').value, para = $('#para').value, p = ['p1', 'p2', 'p3'].map(id => $('#' + id).value.trim());
-    if (!de || !para) return toast('Elige tu nombre y a quién le regalas');
-    const auto = pistasAuto(de); p.forEach((x, i) => { if (x.length < 3) p[i] = auto[i]; });
-    const codigo = 'AS1-' + enc(JSON.stringify({ de, para, p }));
-    const wa = 'https://wa.me/?text=' + encodeURIComponent('🎄 Mi código de pistas del Amigo Secreto:\n' + codigo);
-    $('#resultado').innerHTML = `<div class="campo" style="margin-top:16px"><label>Tu código ✅</label><textarea class="salida" id="cod" readonly>${codigo}</textarea></div>
-      <div class="fila"><button class="btn sec" id="copiar">📋 Copiar</button><a class="btn verde" style="text-align:center;text-decoration:none" href="${wa}" target="_blank" rel="noopener">WhatsApp</a></div>
-      <p class="nota">Envíaselo solo al anfitrión. No se puede leer a simple vista.</p>`;
-    $('#copiar').onclick = () => copiar(codigo, $('#cod'));
-  };
-}
-
-/* ---------- organizador (anfitrión) ---------- */
-function vistaOrganizador() {
-  pantalla(`
-    <div class="topbar"><a href="#juego" style="color:#fff;font-weight:800">← Inicio</a><span>Organizador</span></div>
-    <section class="card">
-      <h2>Panel del anfitrión</h2>
-      <p class="desc">Pega todos los códigos que te enviaron (en cualquier orden). Aquí solo verás <b>quién falta</b>, nunca las pistas ni las parejas.</p>
-      <div class="campo"><textarea id="codigos" class="salida" placeholder="AS1-…"></textarea><small>Se guardan en este celular para que no los pierdas.</small></div>
-      <div id="estado"></div>
-      <div class="campo"><label>Hora de inicio (opcional)</label><input type="datetime-local" id="hora" style="font:800 17px 'Nunito',system-ui,sans-serif;padding:12px;border-radius:14px;border:2px solid #ead9bf;width:100%"><small>Antes de esa hora, los jugadores ven una cuenta regresiva. Vacío = el juego abre apenas subas el archivo.</small></div>
-      <button class="btn verde" id="gen">Generar config.js</button>
-      <div id="out"></div>
-    </section>
-    <section class="card">
-      <h2 class="peq">Herramientas de este celular</h2>
-      <div class="fila"><button class="btn sec" id="quitarPrueba">Quitar paquete de prueba</button><button class="btn sec" id="reset">Borrar progreso</button></div>
-    </section>`);
-  let entradas = [];
-  const analizar = () => {
-    const txt = $('#codigos').value, cods = txt.match(/AS1-[A-Za-z0-9+/=]+/g) || [];
-    entradas = []; const errores = [];
-    cods.forEach(c => { try { const o = JSON.parse(dec(c.slice(4))); if (!NOMBRES.includes(o.de) || !NOMBRES.includes(o.para) || o.p?.length !== 3) throw 0; entradas.push(o); } catch (e) { errores.push('Hay un código dañado o incompleto.'); } });
-    const porDe = {}, porPara = {};
-    entradas.forEach(o => { porDe[o.de] = (porDe[o.de] || 0) + 1; porPara[o.para] = (porPara[o.para] || 0) + 1; if (o.de === o.para) errores.push(`${o.de} se eligió a sí mismo.`); });
-    Object.entries(porDe).forEach(([n, k]) => k > 1 && errores.push(`${n} envió ${k} códigos (se usará el último).`));
-    Object.entries(porPara).forEach(([n, k]) => k > 1 && errores.push(`Dos personas dicen regalarle a ${n}. Revisen el sorteo.`));
-    $('#estado').innerHTML = `<div class="estado"><span class="h">Nombre</span><span class="h">Envió</span><span class="h">Tiene pistas</span>${NOMBRES.map(n => `<span>${esc(n)}</span><span>${porDe[n] ? '✅' : '⏳'}</span><span>${porPara[n] ? '✅' : '⏳'}</span>`).join('')}</div>
-      <p class="nota">${Object.keys(porPara).length} de ${NOMBRES.length} con pistas · quien no tenga, juega igual y su revelación es en persona.</p>${[...new Set(errores)].map(e => `<div class="err-lista">⚠️ ${esc(e)}</div>`).join('')}`;
-  };
-  $('#codigos').value = store.get('as_org_codigos') || '';
-  $('#codigos').oninput = () => { store.set('as_org_codigos', $('#codigos').value); analizar(); };
-  analizar();
-  $('#gen').onclick = () => {
-    const pares = {}; entradas.forEach(o => pares[o.para] = { de: o.de, pistas: o.p });
-    const paq = entradas.length ? enc(JSON.stringify({ pares })) : '';
-    const hv = $('#hora').value, iso = hv ? new Date(hv).toISOString() : '';
-    const texto = `// Generado por #organizador el ${new Date().toLocaleString('es-PE')}\n// Pistas para ${Object.keys(pares).length} de ${NOMBRES.length} participantes.\nwindow.AMIGO_CONFIG = {\n  paquete: "${paq}",\n  horaInicio: "${iso}"\n};\n`;
-    $('#out').innerHTML = `<div class="campo" style="margin-top:16px"><label>Tu nuevo config.js</label><textarea class="salida" id="paq" readonly>${esc(texto)}</textarea><small>Reemplaza el contenido de <b>public/config.js</b> en GitHub con esto. Netlify lo publica solo en ~1 minuto.</small></div>
-      <div class="fila"><button class="btn sec" id="cp">📋 Copiar</button><button class="btn sec" id="dl">⬇️ Descargar</button></div>
-      <div class="fila"><button class="btn oro" id="probar">Probar en este celular</button></div>`;
-    $('#cp').onclick = () => copiar(texto, $('#paq'));
-    $('#dl').onclick = () => {
-      try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([texto], { type: 'text/javascript' })); a.download = 'config.js'; document.body.appendChild(a); a.click(); a.remove(); }
-      catch (e) { toast('No se pudo descargar; usa Copiar'); }
-    };
-    $('#probar').onclick = () => { store.set('as_paquete_prueba', paq); recargar(); toast('Paquete cargado en este celular'); };
-  };
-  $('#quitarPrueba').onclick = () => { store.del('as_paquete_prueba'); recargar(); toast('Paquete de prueba quitado'); };
-  $('#reset').onclick = async () => {
-    const i = await modal('<h3>¿Borrar progreso?</h3><p>Se reinician todas las rondas jugadas en este celular.</p>', [{ t: 'Cancelar', cls: 'sec' }, { t: 'Borrar' }]);
-    if (i === 1) { NOMBRES.forEach(n => { store.del('as_prog_' + n); store.del('as_prog_demo_' + n); }); store.del('as_yo'); toast('Progreso borrado'); }
-  };
-}
-
-/* ---------- router ---------- */
-function ruta() {
-  const h = location.hash.slice(1);
-  if (h === 'organizador') return vistaOrganizador();
-  if (h === 'pistas') return vistaEscribir();
-  if (h === 'demo' && ESTADO !== 'real') { store.set('as_demo', true); recargar(); }
-  if (ESTADO !== 'demo' && HORA_INICIO && HORA_INICIO > Date.now() && !store.get('as_paquete_prueba')) return vistaCuenta();
-  const yo = store.get('as_yo');
-  if (yo && NOMBRES.includes(yo)) return vistaHub(yo);
-  vistaInicio();
-}
-addEventListener('hashchange', ruta);
-ruta();
+/*__PARTE_ADMIN__*/
 </script>
 </body>
 </html>

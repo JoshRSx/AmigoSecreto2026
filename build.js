@@ -27,7 +27,10 @@ const out = {
 
 const tpl = fs.readFileSync(path.join(__dirname, 'src/template.html'), 'utf8');
 if (!tpl.includes('/*__DATA__*/null')) throw new Error('marcador no encontrado');
-const html = tpl.replace('/*__DATA__*/null', () => JSON.stringify(out));
-fs.mkdirSync(path.join(__dirname, 'public'), { recursive: true });
-fs.writeFileSync(path.join(__dirname, 'public/index.html'), html);
+const parte = (f) => fs.readFileSync(path.join(__dirname, 'src', f), 'utf8');
+const html = tpl
+  .replace('/*__DATA__*/null', () => JSON.stringify(out))
+  .replace('/*__PARTE_SERVIDOR__*/', () => parte('parte_servidor.js'))
+  .replace('/*__PARTE_ADMIN__*/', () => parte('parte_admin.js'));
+fs.writeFileSync(path.join(__dirname, 'hosting/index.html'), html);
 console.log('OK', html.length, 'bytes');
