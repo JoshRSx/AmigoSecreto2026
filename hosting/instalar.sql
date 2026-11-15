@@ -1,12 +1,12 @@
 -- Amigo Secreto Familiar 2026
 -- Importar en phpMyAdmin: selecciona tu base de datos → pestaña "Importar" → este archivo.
--- Volver a importarlo REINICIA todo (sorteos y progreso).
+-- Volver a importarlo REINICIA todo (sorteos y progreso). Solo toca la tabla amigo_participantes.
 
 SET NAMES utf8mb4;
 
-DROP TABLE IF EXISTS participantes;
+DROP TABLE IF EXISTS amigo_participantes;
 
-CREATE TABLE participantes (
+CREATE TABLE amigo_participantes (
   nombre            VARCHAR(40)  NOT NULL PRIMARY KEY,
   token             CHAR(32)     NULL COMMENT 'Celular que eligió el nombre',
   reclamado_en      DATETIME     NULL COMMENT 'Cuándo eligió su nombre',
@@ -22,7 +22,7 @@ CREATE TABLE participantes (
   UNIQUE KEY uq_asignado (asignado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO participantes (nombre) VALUES
+INSERT INTO amigo_participantes (nombre) VALUES
   ('Joshua'), ('Estephany'), ('Dante'), ('Guillermo'), ('Josefina'),
   ('Gabriel'), ('Noemí'), ('Patricia'), ('Fernando'), ('Valeria'),
   ('Cesar'), ('Jhency'), ('Juliett'), ('Ashley');

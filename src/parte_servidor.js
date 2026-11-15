@@ -51,7 +51,7 @@ function apiLocal(accion, d) {
   if (['reclamar', 'resultado', 'sortear', 'progreso'].includes(accion) && !fila) return fallo('Ese nombre no está en la lista.', 404);
   if (['resultado', 'sortear', 'progreso'].includes(accion) && fila.token !== d.token) return fallo('Este nombre está vinculado a otro celular.', 409);
   switch (accion) {
-    case 'estado': return ok({ ahora: t, inicio: null, whatsapp: '', participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, termino: !!db[n].asignado })) });
+    case 'estado': return ok({ ahora: t, inicio: null, participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, termino: !!db[n].asignado })) });
     case 'reclamar':
       if (fila.token && fila.token !== d.token) return fallo('Este nombre ya se está usando en otro celular. Pídele al anfitrión que lo libere.', 409);
       if (!fila.token) Object.assign(fila, { token: d.token, reclamado_en: t, ultima_actividad: t });
@@ -111,7 +111,7 @@ const FRASES = [
   'El amor es lo único que crece cuando se reparte.',
 ];
 const frase = (yo, i) => FRASES[(NOMBRES.indexOf(yo) * 3 + i) % FRASES.length];
-// WhatsApp del anfitrión (config.php puede reemplazarlo)
+// WhatsApp del anfitrión (código de país + número, sin + ni espacios)
 const WHATSAPP_ANFITRION = '51928504589';
 
 /* ---------- vistas ---------- */
@@ -335,7 +335,7 @@ function vistaSorteo(yo) {
 
 function vistaResultado(yo, recien) {
   const p = prog(yo);
-  const num = ((ESTADO && ESTADO.whatsapp) || WHATSAPP_ANFITRION).replace(/\D/g, '');
+  const num = WHATSAPP_ANFITRION;
   const msg = `🎄 Hola, soy ${yo}. Mi amigo secreto es ${p.asignado}.`;
   const wa = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
   pantalla(`

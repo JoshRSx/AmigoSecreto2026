@@ -4,7 +4,7 @@ AMIGO SECRETO FAMILIAR 2026 — INSTALACIÓN EN EL HOSTING (PHP + MySQL)
 Archivos:
   index.html     la app
   api.php        el sorteo (servidor)
-  config.php     datos de la base, claves de ingreso, hora de inicio y tu WhatsApp
+  config.php     datos de la base, claves de ingreso y hora de inicio
   instalar.sql   crea la tabla con los 14 participantes
   .htaccess      protege config.php e instalar.sql
 
@@ -12,7 +12,7 @@ Archivos:
    - En cPanel → "Bases de datos MySQL": crea una base y un usuario, y dale TODOS
      los privilegios sobre esa base. (Si ya tienes una base, puedes usarla.)
    - En phpMyAdmin: selecciona la base → pestaña "Importar" → instalar.sql → Continuar.
-   - Debe aparecer la tabla "participantes" con 14 filas. Revisa que "Noemí" tenga la tilde bien.
+   - Debe aparecer la tabla "amigo_participantes" con 14 filas. Revisa que "Noemí" tenga la tilde bien.
 
 2) CONFIGURACIÓN (config.php)
    - Solo completa db_name, db_user y db_pass (con el prefijo de cPanel, ej. 'tuusuario_amigo').

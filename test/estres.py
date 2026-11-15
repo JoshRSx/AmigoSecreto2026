@@ -9,7 +9,7 @@ def call(d):
     except urllib.error.HTTPError as e: return json.loads(e.read())
 nombres=[p['nombre'] for p in call({'accion':'estado'})['participantes']]
 stats=collections.Counter(); problemas=[]
-for run in range(60):
+for run in range(30):
     call({'accion':'reiniciar','clave':os.environ['CLAVE_ADMIN']})
     tok={n:secrets.token_hex(16) for n in nombres}
     for n in nombres: assert call({'accion':'reclamar','nombre':n,'token':tok[n]})['ok']

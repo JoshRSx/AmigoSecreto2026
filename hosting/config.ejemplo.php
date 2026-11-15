@@ -15,7 +15,4 @@ return [
     // Hora de inicio en hora de Lima ('AAAA-MM-DD HH:MM'). Vacío = abierto ya.
     'hora_inicio' => '',
     'zona' => 'America/Lima',
-
-    // WhatsApp del anfitrión con código de país, sin + ni espacios
-    'whatsapp_anfitrion' => '',
 ];
