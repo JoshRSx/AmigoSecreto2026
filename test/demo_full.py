@@ -11,10 +11,11 @@ with sync_playwright() as p:
         n=P['nombre']
         pg.evaluate('localStorage.removeItem("as_yo"); localStorage.removeItem("as_token")'); pg.goto(U+'#juego'); pg.reload(); pg.wait_for_selector('.nombre')
         pg.click(f'.nombre[data-n="{n}"]'); pg.click('#modal [data-i="1"]'); pg.wait_for_selector('[data-ronda="0"]')
-        for i,lv in enumerate(P['niveles']):
+        for i,lv in enumerate(P['niveles'][:2]):
             pg.click(f'[data-ronda="{i}"]'); pg.wait_for_timeout(150); solve(pg, lv); pg.wait_for_selector('#regalo', timeout=8000)
             pg.click('#regalo'); pg.wait_for_timeout(500); pg.click('#seguir'); pg.wait_for_timeout(250)
-        pg.click('#listo'); pg.wait_for_selector('#nombreRes', timeout=15000); asign[n]=pg.inner_text('#nombreRes')
+        pg.click('#listo'); pg.wait_for_selector('.huecos', timeout=15000); solve(pg, P['niveles'][2])
+        pg.wait_for_selector('#nombreRes', timeout=15000); asign[n]=pg.inner_text('#nombreRes')
     print('42 desafíos + 14 sorteos completos:', len(asign)==14)
     print('sin repetir / sin sí mismo:', len(set(asign.values()))==14, all(k!=v for k,v in asign.items()))
     print('errores JS:', errs); b.close()

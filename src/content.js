@@ -193,3 +193,7 @@ const R = [
   ],
 ];
 module.exports.participantes.find((p) => p.nombre === 'Ashley').niveles.forEach((n, i) => (n.retos = R[i]));
+
+// Desafío 3: igual para todos. El nombre cifrado es el amigo secreto de cada persona (lo sortea el servidor).
+const CIFRADO = { tipo: 'cifrado', enunciado: 'Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.', ayuda: 'Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra.' };
+module.exports.participantes.forEach((p) => (p.niveles[2] = CIFRADO));

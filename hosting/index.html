@@ -125,6 +125,10 @@ textarea{font-size:16px;font-weight:700;min-height:70px;resize:vertical}
 .celda.sel{background:var(--oro)}
 .celda.ok{background:#bfe8cf;color:var(--verde)}
 .celda.err{background:#ffc9c9}
+.letras.chicas span{width:32px;height:40px;font-size:19px}
+.huecos{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:-4px 0 6px}
+.huecos span{width:32px;text-align:center;font:900 22px 'Nunito',system-ui,sans-serif;color:#cdbfa8;border-bottom:3px solid #e0cfae}
+.huecos span.ok{color:var(--rojo);border-color:var(--rojo)}
 .celda.pista{background:var(--oro);animation:latido .8s infinite}
 /* Memoria */
 .memoria{display:grid;gap:10px;margin-top:12px}
@@ -222,7 +226,7 @@ textarea{font-size:16px;font-weight:700;min-height:70px;resize:vertical}
 <div id="toast"></div>
 <div id="modal" hidden></div>
 <script>
-const DATA = {"intentos":2,"participantes":[{"nombre":"Joshua","icono":"💻","juego":"Depurando la Navidad","desc":"Retos de programador: código, binario y mensajes cifrados.","niveles":[{"tipo":"opciones","enunciado":"¿Qué muestra este código?","visual":"<div class=\"serie\" style=\"font-family:monospace;font-size:22px\">console.log(2 + 3 * 2)</div>","opciones":["10","8","12","7"],"ayuda":"La multiplicación va antes que la suma.","r":"Xw=="},{"tipo":"texto","enunciado":"Convierte de binario a decimal","visual":"<div class=\"serie\">1100₂ = ?</div>","ayuda":"8 + 4 + 0 + 0","r":["X1M=","Cg4VDA=="]},{"tipo":"texto","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descífralo.","visual":"<div class=\"letras\"><span>O</span><span>B</span><span>W</span><span>J</span><span>E</span><span>B</span><span>E</span></div>","ayuda":"Retrocede una letra: O→N, B→A…","r":["AAAAAAAAAA=="]}]},{"nombre":"Estephany","icono":"📚","juego":"Examen sorpresa navideño","desc":"Preguntas de colegio con espíritu navideño.","niveles":[{"tipo":"texto","enunciado":"Papá Noel resolvió esta ecuación. ¿Cuánto vale x?","visual":"<div class=\"serie\">3x + 5 = 20</div>","ayuda":"Primero resta 5 a ambos lados.","r":["Ww==","DQgYCgs=","FlQ="]},{"tipo":"opciones","enunciado":"La estrella del árbol es dorada. ¿Cuál es el símbolo químico del oro?","opciones":["Ag","Au","Or","O"],"ayuda":"Viene del latín «aurum».","r":"Xw=="},{"tipo":"sopa","enunciado":"Encuentra los 3 cursos escondidos","palabras":["QUIMICA","HISTORIA","ARTE"],"tam":8,"semilla":41,"ayuda":"Las palabras pueden ir de izquierda a derecha, de arriba abajo o en diagonal. La ayuda marca dónde empieza una."}]},{"nombre":"Dante","icono":"📊","juego":"Auditoría navideña","desc":"Cuadra las cuentas de Papá Noel y encuentra el error.","niveles":[{"tipo":"texto","enunciado":"Libro de Papá Noel. ¿Cuál es el saldo?","visual":"<ul class=\"lista\"><li>Debe: S/ 500 + S/ 300</li><li>Haber: S/ 200</li></ul>","ayuda":"Saldo = total del Debe − total del Haber.","r":["WFFG","HVdGWQ==","HQQfGgcIAUNGX0E="]},{"tipo":"opciones","enunciado":"Un regalo cuesta S/ 200 sin IGV. ¿Cuánto es el IGV (18 %)?","opciones":["S/ 18","S/ 36","S/ 20","S/ 38"],"ayuda":"10 % de 200 es 20; 8 % es 16.","r":"Xw=="},{"tipo":"opciones","enunciado":"Auditoría: <b>una</b> de estas sumas está mal. ¿Cuál?","opciones":["120 + 80 = 200","45 + 55 = 100","230 + 70 = 310","15 + 35 = 50"],"ayuda":"Revisa las decenas con calma.","r":"XA=="}]},{"nombre":"Guillermo","icono":"📹","juego":"Central de monitoreo","desc":"Revisa las cámaras, activa la alarma y ubica al intruso.","niveles":[{"tipo":"diferencias","enunciado":"Cámara 1: encuentra las 3 cosas que cambiaron","difs":["ventana","nariz","regalo"],"ayuda":"Fíjate en la casa, el muñeco de nieve y los regalos."},{"tipo":"candado","enunciado":"Desactiva la alarma con el código","visual":"<ul class=\"lista\"><li>1.º ¿Cuánto es 10 − 9?</li><li>2.º Colores de un semáforo</li><li>3.º Ruedas de un auto</li><li>4.º Lados de un hexágono</li></ul>","ayuda":"Un hexágono tiene 6 lados.","r":["X1JCXw=="]},{"tipo":"opciones","enunciado":"Un intruso pasó por 3 cámaras. La cámara 2 lo vio primero. La cámara 1 lo vio después que la 3. <b>¿Cuál lo vio al final?</b>","opciones":["Cámara 1","Cámara 2","Cámara 3"],"ayuda":"Ordena: primero la 2, luego…","r":"Xg=="}]},{"nombre":"Josefina","icono":"🍲","juego":"La cocina navideña","desc":"Juegos de la cocina y la casa. ¡Tómate tu tiempo!","niveles":[{"tipo":"memoria","enunciado":"Memoriza y encuentra las 3 parejas","pares":["🍳","🥄","🍲"],"vista":8,"ayuda":"Toca dos cartas iguales. La ayuda te muestra las cartas otra vez."},{"tipo":"opciones","enunciado":"¿Qué ingrediente <b>NO</b> va en el chocolate caliente?","opciones":["Leche","Cacao","Azúcar","Cebolla"],"ayuda":"Una de estas se usa para el arroz o la ensalada, no para algo dulce.","r":"XQ=="},{"tipo":"opciones","enunciado":"¿Qué preparamos con esto en Navidad?","visual":"<div class=\"emojis\">🥛 + 🍫</div>","opciones":["Chocolatada","Ensalada","Sopa"],"ayuda":"Leche con chocolate, se toma con panetón.","r":"Xg=="}]},{"nombre":"Gabriel","icono":"🩺","juego":"Consulta médica navideña","desc":"Diagnostica, ordena y resuelve el caso clínico.","niveles":[{"tipo":"opciones","enunciado":"¿Cuántos huesos tiene el cuerpo humano adulto?","opciones":["150","206","300","98"],"ayuda":"Más de 200.","r":"Xw=="},{"tipo":"texto","enunciado":"Ordena las letras: el órgano que más trabaja en Navidad","visual":"<div class=\"letras\"><span>Z</span><span>O</span><span>N</span><span>A</span><span>R</span><span>C</span><span>O</span></div>","ayuda":"Bombea la sangre.","r":["DQ4ECB4OCg=="]},{"tipo":"opciones","enunciado":"Tres pacientes: uno con fiebre, otro con tos y otro con dolor de rodilla. <b>¿Quién tiene fiebre?</b>","visual":"<ul class=\"lista\"><li>Ana no tiene fiebre ni tos.</li><li>Beto no tiene fiebre.</li></ul>","opciones":["Ana","Beto","Carla"],"ayuda":"¿Qué le queda a Ana?","r":"XA=="}]},{"nombre":"Noemí","icono":"✏️","juego":"Clase de Navidad","desc":"Ortografía, útiles y adivinanzas de la profe.","niveles":[{"tipo":"opciones","enunciado":"Corrige la tarea: ¿cuál está bien escrita?","opciones":["Nabidad","Navidad","Nabidat","Navidat"],"ayuda":"Se escribe con V de «vela» y termina en D.","r":"Xw=="},{"tipo":"sopa","enunciado":"Encuentra los 3 útiles escolares","palabras":["LAPIZ","CUADERNO","PIZARRA"],"tam":8,"semilla":52,"ayuda":"La ayuda marca la primera letra de una palabra."},{"tipo":"texto","enunciado":"Tengo hojas y no soy árbol, tengo lomo y no soy caballo. ¿Qué soy?","ayuda":"Está en la mochila y en la biblioteca.","r":["AggUGws=","AggUGwsS"]}]},{"nombre":"Patricia","icono":"🍎","juego":"Recreo navideño","desc":"Letras, plurales y memoria de salón de clases.","niveles":[{"tipo":"texto","enunciado":"Ordena las letras","visual":"<div class=\"letras\"><span>L</span><span>A</span><span>U</span><span>C</span><span>E</span><span>S</span><span>E</span></div>","ayuda":"Ahí trabajas de lunes a viernes.","r":["CxIVHAENBQ=="]},{"tipo":"opciones","enunciado":"¿Cuál es el plural correcto de «lápiz»?","opciones":["Lápizes","Lápices","Lápiz","Lapises"],"ayuda":"Como «luz → luces»: la Z cambia a C.","r":"Xw=="},{"tipo":"memoria","enunciado":"Memoriza y encuentra las 4 parejas","pares":["🍎","📚","✏️","🎒"],"vista":6,"ayuda":"La ayuda te muestra las cartas otra vez."}]},{"nombre":"Fernando","icono":"🖥️","juego":"Soporte técnico navideño","desc":"Redes, puertos y coordenadas para el jefe de sistemas.","niveles":[{"tipo":"opciones","enunciado":"¿Qué significan las siglas «WWW»?","opciones":["World Wide Web","Wireless Web Window","World Web Wire","Wide Wireless Web"],"ayuda":"«Red mundial» en inglés.","r":"Xg=="},{"tipo":"candado","enunciado":"Abre el rack del servidor","visual":"<ul class=\"lista\"><li>Los dos primeros dígitos: el puerto de HTTP</li><li>Los dos últimos dígitos: el puerto de SSH</li></ul>","ayuda":"HTTP usa el 80 y SSH el 22.","r":["VlFEWw=="]},{"tipo":"texto","enunciado":"Sigue las coordenadas: ¿dónde guardamos los archivos?","visual":"<table class=\"tabla coord\"><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th></tr><tr><th>A</th><td>N</td><td>X</td><td>T</td><td>R</td></tr><tr><th>B</th><td>Q</td><td>U</td><td>M</td><td>B</td></tr><tr><th>C</th><td>E</td><td>L</td><td>O</td><td>P</td></tr><tr><th>D</th><td>K</td><td>S</td><td>D</td><td>I</td></tr></table><div class=\"codigo txt\">A1 · B2 · B4 · C1</div>","ayuda":"A1 es la fila A, columna 1.","r":["ABQUDA==","AgAYHAYE"]}]},{"nombre":"Valeria","icono":"🧸","juego":"El taller de Papá Noel","desc":"Juegos con dibujos. ¡Pide ayuda si la necesitas!","niveles":[{"tipo":"memoria","enunciado":"Encuentra las parejas","pares":["🎄","⭐","🎁"],"vista":6,"ayuda":"La ayuda te muestra las cartas otra vez."},{"tipo":"diferencias","enunciado":"Encuentra las 3 diferencias","difs":["estrella","luna","puerta"],"ayuda":"Mira el cielo, el árbol y la casa."},{"tipo":"opciones","enunciado":"¿Cuántos regalos hay?","visual":"<div class=\"emojis\">🎁🎁🎁🎁🎁</div>","opciones":["3","4","5","6"],"ayuda":"Cuéntalos con tu dedito: uno, dos, tres…","r":"XA=="}]},{"nombre":"Cesar","icono":"🔬","juego":"Laboratorio navideño","desc":"Muestras, palabras y secuencias de laboratorio.","niveles":[{"tipo":"opciones","enunciado":"¿Qué grupo sanguíneo es el donante universal?","opciones":["O−","AB+","A+","B−"],"ayuda":"Es el grupo O.","r":"Xg=="},{"tipo":"texto","enunciado":"Ordena las letras","visual":"<div class=\"letras\"><span>R</span><span>O</span><span>T</span><span>A</span><span>L</span><span>O</span><span>B</span><span>I</span><span>R</span><span>A</span><span>O</span></div>","ayuda":"Donde trabajas con muestras.","r":["AgAUBhYAEEJAWV0="]},{"tipo":"texto","enunciado":"Un cultivo crece así. ¿Qué número sigue?","visual":"<div class=\"serie\">3 – 6 – 12 – 24 – ?</div>","ayuda":"Cada número es el doble del anterior.","r":["Wlk=","DRQXGwEPEExLX1FeAQ=="]}]},{"nombre":"Jhency","icono":"🏥","juego":"Guardia en pediatría","desc":"Retos del hospital del niño.","niveles":[{"tipo":"opciones","enunciado":"¿Cuál es la temperatura normal del cuerpo?","opciones":["36,5 °C","40 °C","30 °C","42 °C"],"ayuda":"A partir de 38 °C ya es fiebre.","r":"Xg=="},{"tipo":"opciones","enunciado":"Tres niños en pediatría: uno con yeso, otro con vendaje y otro con curita. <b>¿Quién tiene yeso?</b>","visual":"<ul class=\"lista\"><li>Leo no tiene yeso ni vendaje.</li><li>Mía no tiene yeso.</li></ul>","opciones":["Leo","Mía","Sol"],"ayuda":"¿Qué tiene Leo entonces?","r":"XA=="},{"tipo":"memoria","enunciado":"Memoriza y encuentra las 4 parejas","pares":["🩺","💉","🌡️","🧸"],"vista":6,"ayuda":"La ayuda te muestra las cartas otra vez."}]},{"nombre":"Juliett","icono":"🍳","juego":"La tienda de utensilios","desc":"Atiende a los clientes de la tienda navideña.","niveles":[{"tipo":"opciones","enunciado":"Un cliente quiere servir la sopa de Navidad. ¿Qué le recomiendas?","opciones":["Cucharón","Tenedor","Espátula","Pinza"],"ayuda":"Es una cuchara grande y honda.","r":"Xg=="},{"tipo":"candado","enunciado":"Caja registradora: ¿cuál es el precio final?","visual":"<ul class=\"lista\"><li>Un juego de ollas cuesta S/ 1250.</li><li>Tiene S/ 250 de descuento.</li></ul>","ayuda":"Resta: 1250 − 250.","r":["X1FGWQ=="]},{"tipo":"sopa","enunciado":"Encuentra los 3 utensilios","palabras":["OLLA","SARTEN","TAZA"],"tam":7,"semilla":63,"ayuda":"La ayuda marca la primera letra de una palabra."}]},{"nombre":"Ashley","icono":"🎒","juego":"La ruleta de los desafíos","desc":"Gira la ruleta y supera el desafío que te toque.","niveles":[{"tipo":"ruleta","enunciado":"Gira la ruleta","retos":[{"tipo":"texto","enunciado":"Blanca por dentro, verde por fuera; si quieres que te lo diga, espera. ¿Qué es?","r":["HgQECA=="],"ayuda":"La respuesta está escondida en la última palabra."},{"tipo":"texto","enunciado":"¿Cuál es la capital del Perú?","r":["AggbCA=="],"ayuda":"Ahí queda el Jockey Plaza."},{"tipo":"texto","enunciado":"¿Cuánto es 7 × 8?","r":["W1c=","DQgYChEECllTSUFTBxI="],"ayuda":"7 × 8 = 7 × 4 × 2 = 28 × 2."},{"tipo":"texto","enunciado":"Ordena estas letras:","visual":"<div class=\"letras\"><span>R</span><span>O</span><span>G</span><span>A</span><span>L</span><span>E</span></div>","r":["HAQRCAgO"],"ayuda":"Lo que hay debajo del árbol."},{"tipo":"opciones","enunciado":"¿Cuál sobra?","opciones":["🍎","🍌","🚗","🍇"],"ayuda":"Tres se comen y uno no.","r":"XA=="},{"tipo":"texto","enunciado":"Si hoy es domingo, ¿qué día será pasado mañana?","r":["AwAEHQES"],"ayuda":"Mañana es lunes…"}]},{"tipo":"ruleta","enunciado":"Gira la ruleta","retos":[{"tipo":"texto","enunciado":"Oro parece, plata no es. ¿Qué es?","r":["Hg0XHQUPCw==","DAAYCAoA","DAAYCAoO"],"ayuda":"Junta «plata» y «no es»."},{"tipo":"texto","enunciado":"¿En qué país está Machu Picchu?","r":["HgQEHA=="],"ayuda":"¡Es el nuestro!"},{"tipo":"texto","enunciado":"¿Cuánto es 15 + 27?","r":["WlM=","DRQXGwEPEExLVF1F"],"ayuda":"15 + 25 = 40, y faltan 2."},{"tipo":"texto","enunciado":"Ordena estas letras:","visual":"<div class=\"letras\"><span>Z</span><span>A</span><span>P</span></div>","r":["HgAM"],"ayuda":"Lo contrario de la guerra."},{"tipo":"opciones","enunciado":"¿Cuál NO es un color?","opciones":["Rojo","Azul","Mesa","Verde"],"ayuda":"Uno es un mueble.","r":"XA=="},{"tipo":"texto","enunciado":"Tengo 3 manzanas y me como una. ¿Cuántas me quedan?","r":["XA==","Cg4F"],"ayuda":"3 − 1"}]},{"tipo":"ruleta","enunciado":"Gira la ruleta","retos":[{"tipo":"texto","enunciado":"Vuela sin alas, silba sin boca y no lo puedes ver. ¿Qué es?","r":["GAgTBxAO","DwgEDA=="],"ayuda":"Mueve las hojas de los árboles."},{"tipo":"texto","enunciado":"¿Cuántos días tiene diciembre?","r":["XVA=","GhMTAAoVBVRHXl0="],"ayuda":"Año Nuevo es el día después del último."},{"tipo":"texto","enunciado":"¿Cuánto es 100 − 37?","r":["WFI=","HQQFDAoVBVRGQldF"],"ayuda":"100 − 40 = 60, y súmale 3."},{"tipo":"texto","enunciado":"Ordena estas letras:","visual":"<div class=\"letras\"><span>A</span><span>L</span><span>E</span><span>V</span></div>","r":["GAQaCA=="],"ayuda":"Se enciende en la mesa de Nochebuena."},{"tipo":"opciones","enunciado":"¿Qué NO llevarías a la playa?","opciones":["Sombrilla","Toalla","Bufanda","Bloqueador"],"ayuda":"Una se usa cuando hace frío.","r":"XA=="},{"tipo":"texto","enunciado":"¿Cuántas patas tiene una araña?","r":["Vg==","AQIeBg=="],"ayuda":"Más que un perro y un gato juntos."}]}]}]};
+const DATA = {"intentos":2,"participantes":[{"nombre":"Joshua","icono":"💻","juego":"Depurando la Navidad","desc":"Retos de programador: código, binario y mensajes cifrados.","niveles":[{"tipo":"opciones","enunciado":"¿Qué muestra este código?","visual":"<div class=\"serie\" style=\"font-family:monospace;font-size:22px\">console.log(2 + 3 * 2)</div>","opciones":["10","8","12","7"],"ayuda":"La multiplicación va antes que la suma.","r":"Xw=="},{"tipo":"texto","enunciado":"Convierte de binario a decimal","visual":"<div class=\"serie\">1100₂ = ?</div>","ayuda":"8 + 4 + 0 + 0","r":["X1M=","Cg4VDA=="]},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Estephany","icono":"📚","juego":"Examen sorpresa navideño","desc":"Preguntas de colegio con espíritu navideño.","niveles":[{"tipo":"texto","enunciado":"Papá Noel resolvió esta ecuación. ¿Cuánto vale x?","visual":"<div class=\"serie\">3x + 5 = 20</div>","ayuda":"Primero resta 5 a ambos lados.","r":["Ww==","DQgYCgs=","FlQ="]},{"tipo":"opciones","enunciado":"La estrella del árbol es dorada. ¿Cuál es el símbolo químico del oro?","opciones":["Ag","Au","Or","O"],"ayuda":"Viene del latín «aurum».","r":"Xw=="},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Dante","icono":"📊","juego":"Auditoría navideña","desc":"Cuadra las cuentas de Papá Noel y encuentra el error.","niveles":[{"tipo":"texto","enunciado":"Libro de Papá Noel. ¿Cuál es el saldo?","visual":"<ul class=\"lista\"><li>Debe: S/ 500 + S/ 300</li><li>Haber: S/ 200</li></ul>","ayuda":"Saldo = total del Debe − total del Haber.","r":["WFFG","HVdGWQ==","HQQfGgcIAUNGX0E="]},{"tipo":"opciones","enunciado":"Un regalo cuesta S/ 200 sin IGV. ¿Cuánto es el IGV (18 %)?","opciones":["S/ 18","S/ 36","S/ 20","S/ 38"],"ayuda":"10 % de 200 es 20; 8 % es 16.","r":"Xw=="},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Guillermo","icono":"📹","juego":"Central de monitoreo","desc":"Revisa las cámaras, activa la alarma y ubica al intruso.","niveles":[{"tipo":"diferencias","enunciado":"Cámara 1: encuentra las 3 cosas que cambiaron","difs":["ventana","nariz","regalo"],"ayuda":"Fíjate en la casa, el muñeco de nieve y los regalos."},{"tipo":"candado","enunciado":"Desactiva la alarma con el código","visual":"<ul class=\"lista\"><li>1.º ¿Cuánto es 10 − 9?</li><li>2.º Colores de un semáforo</li><li>3.º Ruedas de un auto</li><li>4.º Lados de un hexágono</li></ul>","ayuda":"Un hexágono tiene 6 lados.","r":["X1JCXw=="]},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Josefina","icono":"🍲","juego":"La cocina navideña","desc":"Juegos de la cocina y la casa. ¡Tómate tu tiempo!","niveles":[{"tipo":"memoria","enunciado":"Memoriza y encuentra las 3 parejas","pares":["🍳","🥄","🍲"],"vista":8,"ayuda":"Toca dos cartas iguales. La ayuda te muestra las cartas otra vez."},{"tipo":"opciones","enunciado":"¿Qué ingrediente <b>NO</b> va en el chocolate caliente?","opciones":["Leche","Cacao","Azúcar","Cebolla"],"ayuda":"Una de estas se usa para el arroz o la ensalada, no para algo dulce.","r":"XQ=="},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Gabriel","icono":"🩺","juego":"Consulta médica navideña","desc":"Diagnostica, ordena y resuelve el caso clínico.","niveles":[{"tipo":"opciones","enunciado":"¿Cuántos huesos tiene el cuerpo humano adulto?","opciones":["150","206","300","98"],"ayuda":"Más de 200.","r":"Xw=="},{"tipo":"texto","enunciado":"Ordena las letras: el órgano que más trabaja en Navidad","visual":"<div class=\"letras\"><span>Z</span><span>O</span><span>N</span><span>A</span><span>R</span><span>C</span><span>O</span></div>","ayuda":"Bombea la sangre.","r":["DQ4ECB4OCg=="]},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Noemí","icono":"✏️","juego":"Clase de Navidad","desc":"Ortografía, útiles y adivinanzas de la profe.","niveles":[{"tipo":"opciones","enunciado":"Corrige la tarea: ¿cuál está bien escrita?","opciones":["Nabidad","Navidad","Nabidat","Navidat"],"ayuda":"Se escribe con V de «vela» y termina en D.","r":"Xw=="},{"tipo":"sopa","enunciado":"Encuentra los 3 útiles escolares","palabras":["LAPIZ","CUADERNO","PIZARRA"],"tam":8,"semilla":52,"ayuda":"La ayuda marca la primera letra de una palabra."},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Patricia","icono":"🍎","juego":"Recreo navideño","desc":"Letras, plurales y memoria de salón de clases.","niveles":[{"tipo":"texto","enunciado":"Ordena las letras","visual":"<div class=\"letras\"><span>L</span><span>A</span><span>U</span><span>C</span><span>E</span><span>S</span><span>E</span></div>","ayuda":"Ahí trabajas de lunes a viernes.","r":["CxIVHAENBQ=="]},{"tipo":"opciones","enunciado":"¿Cuál es el plural correcto de «lápiz»?","opciones":["Lápizes","Lápices","Lápiz","Lapises"],"ayuda":"Como «luz → luces»: la Z cambia a C.","r":"Xw=="},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Fernando","icono":"🖥️","juego":"Soporte técnico navideño","desc":"Redes, puertos y coordenadas para el jefe de sistemas.","niveles":[{"tipo":"opciones","enunciado":"¿Qué significan las siglas «WWW»?","opciones":["World Wide Web","Wireless Web Window","World Web Wire","Wide Wireless Web"],"ayuda":"«Red mundial» en inglés.","r":"Xg=="},{"tipo":"candado","enunciado":"Abre el rack del servidor","visual":"<ul class=\"lista\"><li>Los dos primeros dígitos: el puerto de HTTP</li><li>Los dos últimos dígitos: el puerto de SSH</li></ul>","ayuda":"HTTP usa el 80 y SSH el 22.","r":["VlFEWw=="]},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Valeria","icono":"🧸","juego":"El taller de Papá Noel","desc":"Juegos con dibujos. ¡Pide ayuda si la necesitas!","niveles":[{"tipo":"memoria","enunciado":"Encuentra las parejas","pares":["🎄","⭐","🎁"],"vista":6,"ayuda":"La ayuda te muestra las cartas otra vez."},{"tipo":"diferencias","enunciado":"Encuentra las 3 diferencias","difs":["estrella","luna","puerta"],"ayuda":"Mira el cielo, el árbol y la casa."},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Cesar","icono":"🔬","juego":"Laboratorio navideño","desc":"Muestras, palabras y secuencias de laboratorio.","niveles":[{"tipo":"opciones","enunciado":"¿Qué grupo sanguíneo es el donante universal?","opciones":["O−","AB+","A+","B−"],"ayuda":"Es el grupo O.","r":"Xg=="},{"tipo":"texto","enunciado":"Ordena las letras","visual":"<div class=\"letras\"><span>R</span><span>O</span><span>T</span><span>A</span><span>L</span><span>O</span><span>B</span><span>I</span><span>R</span><span>A</span><span>O</span></div>","ayuda":"Donde trabajas con muestras.","r":["AgAUBhYAEEJAWV0="]},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Jhency","icono":"🏥","juego":"Guardia en pediatría","desc":"Retos del hospital del niño.","niveles":[{"tipo":"opciones","enunciado":"¿Cuál es la temperatura normal del cuerpo?","opciones":["36,5 °C","40 °C","30 °C","42 °C"],"ayuda":"A partir de 38 °C ya es fiebre.","r":"Xg=="},{"tipo":"opciones","enunciado":"Tres niños en pediatría: uno con yeso, otro con vendaje y otro con curita. <b>¿Quién tiene yeso?</b>","visual":"<ul class=\"lista\"><li>Leo no tiene yeso ni vendaje.</li><li>Mía no tiene yeso.</li></ul>","opciones":["Leo","Mía","Sol"],"ayuda":"¿Qué tiene Leo entonces?","r":"XA=="},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Juliett","icono":"🍳","juego":"La tienda de utensilios","desc":"Atiende a los clientes de la tienda navideña.","niveles":[{"tipo":"opciones","enunciado":"Un cliente quiere servir la sopa de Navidad. ¿Qué le recomiendas?","opciones":["Cucharón","Tenedor","Espátula","Pinza"],"ayuda":"Es una cuchara grande y honda.","r":"Xg=="},{"tipo":"candado","enunciado":"Caja registradora: ¿cuál es el precio final?","visual":"<ul class=\"lista\"><li>Un juego de ollas cuesta S/ 1250.</li><li>Tiene S/ 250 de descuento.</li></ul>","ayuda":"Resta: 1250 − 250.","r":["X1FGWQ=="]},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]},{"nombre":"Ashley","icono":"🎒","juego":"La ruleta de los desafíos","desc":"Gira la ruleta y supera el desafío que te toque.","niveles":[{"tipo":"ruleta","enunciado":"Gira la ruleta","retos":[{"tipo":"texto","enunciado":"Blanca por dentro, verde por fuera; si quieres que te lo diga, espera. ¿Qué es?","r":["HgQECA=="],"ayuda":"La respuesta está escondida en la última palabra."},{"tipo":"texto","enunciado":"¿Cuál es la capital del Perú?","r":["AggbCA=="],"ayuda":"Ahí queda el Jockey Plaza."},{"tipo":"texto","enunciado":"¿Cuánto es 7 × 8?","r":["W1c=","DQgYChEECllTSUFTBxI="],"ayuda":"7 × 8 = 7 × 4 × 2 = 28 × 2."},{"tipo":"texto","enunciado":"Ordena estas letras:","visual":"<div class=\"letras\"><span>R</span><span>O</span><span>G</span><span>A</span><span>L</span><span>E</span></div>","r":["HAQRCAgO"],"ayuda":"Lo que hay debajo del árbol."},{"tipo":"opciones","enunciado":"¿Cuál sobra?","opciones":["🍎","🍌","🚗","🍇"],"ayuda":"Tres se comen y uno no.","r":"XA=="},{"tipo":"texto","enunciado":"Si hoy es domingo, ¿qué día será pasado mañana?","r":["AwAEHQES"],"ayuda":"Mañana es lunes…"}]},{"tipo":"ruleta","enunciado":"Gira la ruleta","retos":[{"tipo":"texto","enunciado":"Oro parece, plata no es. ¿Qué es?","r":["Hg0XHQUPCw==","DAAYCAoA","DAAYCAoO"],"ayuda":"Junta «plata» y «no es»."},{"tipo":"texto","enunciado":"¿En qué país está Machu Picchu?","r":["HgQEHA=="],"ayuda":"¡Es el nuestro!"},{"tipo":"texto","enunciado":"¿Cuánto es 15 + 27?","r":["WlM=","DRQXGwEPEExLVF1F"],"ayuda":"15 + 25 = 40, y faltan 2."},{"tipo":"texto","enunciado":"Ordena estas letras:","visual":"<div class=\"letras\"><span>Z</span><span>A</span><span>P</span></div>","r":["HgAM"],"ayuda":"Lo contrario de la guerra."},{"tipo":"opciones","enunciado":"¿Cuál NO es un color?","opciones":["Rojo","Azul","Mesa","Verde"],"ayuda":"Uno es un mueble.","r":"XA=="},{"tipo":"texto","enunciado":"Tengo 3 manzanas y me como una. ¿Cuántas me quedan?","r":["XA==","Cg4F"],"ayuda":"3 − 1"}]},{"tipo":"cifrado","enunciado":"Mensaje cifrado: cada letra se corrió una posición hacia adelante (A→B). Descifra el nombre de tu amigo secreto.","ayuda":"Retrocede cada letra una posición: B→A, C→B, D→C… Cada vez que pidas ayuda se revela una letra."}]}]};
 
 /* ---------- utilidades ---------- */
 const $ = (s, el = document) => el.querySelector(s);
@@ -384,7 +388,7 @@ function apiLocal(accion, d) {
       let cand = NOMBRES.filter(n => n !== d.nombre && !tomados.has(n));
       if (pendientes.length === 2) { const otro = pendientes.find(n => n !== d.nombre); if (cand.includes(otro)) cand = [otro]; }
       if (!cand.length) return fallo('No quedan personas para sortear. Avísale al anfitrión.', 409);
-      Object.assign(fila, { asignado: cand[Math.floor(Math.random() * cand.length)], orden: Math.max(0, ...NOMBRES.map(n => db[n].orden || 0)) + 1, sorteado_en: t, completados: 3, desafio_actual: null, ultima_actividad: t });
+      Object.assign(fila, { asignado: cand[Math.floor(Math.random() * cand.length)], orden: Math.max(0, ...NOMBRES.map(n => db[n].orden || 0)) + 1, sorteado_en: t, completados: Math.max(fila.completados, 2), desafio_actual: 3, ultima_actividad: t });
       save(); return ok({ asignado: fila.asignado, orden: fila.orden });
     }
     case 'admin': return ok({ inicio: null, ahora: t, participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, ...db[n], token: undefined })) });
@@ -481,8 +485,8 @@ function vistaInicio() {
       const r = await api('reclamar', { nombre: n, token: yoToken });
       store.set('as_yo', n);
       const p = prog(n);
-      if (r.asignado) { p.asignado = r.asignado; p.rondas = [true, true, true]; }
-      else if (r.completados) p.rondas = p.rondas.map((x, k) => x || k < r.completados);
+      if (r.asignado) p.asignado = r.asignado;
+      if (r.completados) p.rondas = p.rondas.map((x, k) => x || k < r.completados);
       guardar(n, p);
       vistaHub(n);
     } catch (e) { await modal(`<h3>No se pudo</h3><p>${esc(e.message)}</p>`, [{ t: 'OK' }]); ruta(); }
@@ -513,8 +517,8 @@ function vistaHub(yo) {
     const hecha = p.rondas[i], abierta = i === 0 || p.rondas[i - 1];
     return `<div class="ronda ${hecha ? 'hecha' : abierta ? 'abierta' : 'bloq'}">
       <div class="ronda-num">${hecha ? '✅' : abierta ? '🎁' : '🔒'}</div>
-      <div class="ronda-txt"><b>Desafío ${i + 1}</b><small>${hecha ? '¡Superado!' : abierta ? 'Listo para jugar' : 'Bloqueado'}</small></div>
-      ${!hecha && abierta ? `<button class="btn chico" data-ronda="${i}">Jugar</button>` : ''}</div>`;
+      <div class="ronda-txt"><b>Desafío ${i + 1}</b><small>${i === 2 ? (hecha ? '¡Descifrado!' : 'Descifra el nombre de tu amigo secreto') : hecha ? '¡Superado!' : abierta ? 'Listo para jugar' : 'Bloqueado'}</small></div>
+      ${!hecha && abierta ? `<button class="btn chico ${i === 2 ? 'oro' : ''}" data-ronda="${i}">${i === 2 ? '🔐 Descifrar' : 'Jugar'}</button>` : ''}</div>`;
   }).join('');
   const todas = p.rondas.every(Boolean);
   pantalla(`
@@ -523,28 +527,30 @@ function vistaHub(yo) {
     <section class="card">
       <div class="juego-tit">${P.icono} Tu juego</div>
       <h2>${esc(P.juego)}</h2>
-      <p class="desc">${esc(P.desc)} Supera los 3 desafíos para descubrir quién es tu amigo secreto.</p>
+      <p class="desc">${esc(P.desc)} Supera 2 desafíos y en el tercero descifra el nombre de tu amigo secreto.</p>
       ${rondas}
-      ${todas ? `<button class="btn oro" id="sortear">${p.asignado ? '🎁 Ver mi amigo secreto' : '🎁 ¡Descubre a tu amigo secreto!'}</button>` : ''}
+      ${todas && p.asignado ? `<button class="btn oro" id="sortear">🎁 Ver mi amigo secreto</button>` : ''}
     </section>
     <p class="enlace"><button class="link" id="cambiar">¿No eres ${esc(yo)}? Cambiar</button></p>`);
-  $$('[data-ronda]').forEach(b => b.onclick = () => vistaReto(yo, +b.dataset.ronda));
-  $('#sortear') && ($('#sortear').onclick = () => p.asignado ? vistaResultado(yo, false) : vistaSorteo(yo));
+  $$('[data-ronda]').forEach(b => b.onclick = () => +b.dataset.ronda === 2 ? vistaSorteo(yo) : vistaReto(yo, +b.dataset.ronda));
+  $('#sortear') && ($('#sortear').onclick = () => vistaResultado(yo, false));
   $('#cambiar').onclick = async () => {
     const i = await modal(`<h3>¿Cambiar de jugador?</h3><p>${esc(yo)} seguirá vinculado a este celular. Si te equivocaste de nombre, pídele al anfitrión que lo libere.</p>`, [{ t: 'Cancelar', cls: 'sec' }, { t: 'Cambiar' }]);
     if (i === 1) { store.del('as_yo'); ruta(); }
   };
   // Verifica en segundo plano que este celular sigue siendo dueño del nombre y si ya sorteó
   api('resultado', { nombre: yo, token: miToken() }).then(r => {
-    if (r.asignado && !p.asignado) { p.asignado = r.asignado; p.rondas = [true, true, true]; guardar(yo, p); vistaHub(yo); }
-    else if (r.completados > p.rondas.filter(Boolean).length && $('#sortear') === null && document.body.contains($('.ronda'))) { p.rondas = p.rondas.map((x, k) => x || k < r.completados); guardar(yo, p); vistaHub(yo); }
+    if (r.asignado && !p.asignado) { p.asignado = r.asignado; guardar(yo, p); }
+    if (r.completados > p.rondas.filter(Boolean).length && $('#sortear') === null && document.body.contains($('.ronda'))) { p.rondas = p.rondas.map((x, k) => x || k < r.completados); guardar(yo, p); vistaHub(yo); }
   }).catch(async e => {
     if (e.status === 409) { store.del('as_yo'); await modal(`<h3>Nombre liberado</h3><p>${esc(e.message)}</p>`, [{ t: 'OK' }]); ruta(); }
   });
 }
 
 function vistaReto(yo, i) {
-  const P = participante(yo), nivel = P.niveles[i];
+  const P = participante(yo);
+  if (i === 2 && !prog(yo).asignado) return vistaSorteo(yo);
+  const nivel = i === 2 ? { ...P.niveles[2], asignado: prog(yo).asignado } : P.niveles[i];
   pantalla(`
     <div class="topbar"><button id="volver">← Volver</button><span>Desafío ${i + 1} de 3</span></div>
     <section class="card reto">
@@ -588,7 +594,7 @@ function completarRonda(yo, i) {
   if (p.rondas.every(Boolean) && !p.fin) p.fin = Date.now();
   guardar(yo, p);
   sonido('bien'); fiesta(false);
-  setTimeout(() => vistaRegalo(yo, i), 700);
+  setTimeout(() => (i === 2 ? vistaResultado(yo, true) : vistaRegalo(yo, i)), 700);
 }
 
 function vistaRegalo(yo, i) {
@@ -598,8 +604,8 @@ function vistaRegalo(yo, i) {
       <h2>¡Superaste el desafío ${i + 1}!</h2>
       <p class="desc" id="tocaRegalo">Toca el regalo 👇</p>
       <button class="regalo-btn" id="regalo" aria-label="Abrir regalo">${SVG_REGALO}</button>
-      <div class="pista-grande frase" id="pista">“${frase(yo, i)}”<br><small style="font-size:16px;color:var(--gris);font-style:normal">${faltan ? `Te falta${faltan > 1 ? 'n' : ''} ${faltan} desafío${faltan > 1 ? 's' : ''} para descubrir a tu amigo secreto.` : '¡Ya puedes descubrir a tu amigo secreto!'}</small></div>
-      <button class="btn ${faltan ? 'verde' : 'oro'}" id="seguir" hidden>${faltan ? 'Continuar' : '🎁 ¡Descubrir ahora!'}</button>
+      <div class="pista-grande frase" id="pista">“${frase(yo, i)}”<br><small style="font-size:16px;color:var(--gris);font-style:normal">${faltan > 1 ? 'Te faltan 2 desafíos para descubrir a tu amigo secreto.' : '¡Ahora descifra el nombre de tu amigo secreto!'}</small></div>
+      <button class="btn ${faltan > 1 ? 'verde' : 'oro'}" id="seguir" hidden>${faltan > 1 ? 'Continuar' : '🔐 Ir al último desafío'}</button>
     </section>`);
   $('#regalo').onclick = () => {
     if ($('#regalo').classList.contains('abierto')) return;
@@ -607,37 +613,37 @@ function vistaRegalo(yo, i) {
     $('#tocaRegalo').style.visibility = 'hidden';
     $('#pista').classList.add('ver'); $('#seguir').hidden = false;
   };
-  $('#seguir').onclick = () => faltan ? vistaHub(yo) : vistaSorteo(yo);
+  $('#seguir').onclick = () => faltan > 1 ? vistaHub(yo) : vistaSorteo(yo);
 }
 
 function vistaSorteo(yo) {
   pantalla(`
     <section class="card centro">
-      <h2>¡Llegó el momento!</h2>
-      <p class="desc" style="font-size:18px">👀 Asegúrate de que <b>nadie más</b> esté viendo tu pantalla.</p>
+      <h2>¡Último desafío!</h2>
+      <p class="desc" style="font-size:18px">Vas a descifrar el nombre de tu amigo secreto.<br>👀 Asegúrate de que <b>nadie más</b> vea tu pantalla.</p>
       <div style="font-size:64px;margin:10px 0">🤫</div>
-      <button class="btn oro" id="listo">Estoy listo, ¡sortear!</button>
+      <button class="btn oro" id="listo">Estoy listo</button>
+      <p style="margin-top:10px"><button class="btn sec" id="volverHub">← Volver</button></p>
     </section>`);
+  $('#volverHub').onclick = () => vistaHub(yo);
   $('#listo').onclick = async () => {
+    if (prog(yo).asignado) return vistaReto(yo, 2);
     pantalla(`
       <section class="card centro">
         <p class="juego-tit">🎄 Sorteando… 🎄</p>
-        <h2>Tu amigo secreto es…</h2>
-        <div class="tragamonedas" id="slot">?</div>
-        <p class="desc" id="sub">🥁🥁🥁</p>
+        <h2>Eligiendo a tu amigo secreto</h2>
+        <div class="tragamonedas" id="slot">🎁</div>
+        <p class="desc">🥁🥁🥁</p>
       </section>`);
-    const otros = NOMBRES.filter(n => n !== yo);
-    let k = 0, activo = true, vel = 70;
-    const girar = () => { if (!activo) return; $('#slot').textContent = otros[k++ % otros.length]; sonido.tick && sonido.tick(); setTimeout(girar, vel); };
+    const figuras = ['🎁', '🎄', '⭐', '🔔', '⛄', '🦌'];
+    let k = 0, activo = true;
+    const girar = () => { if (!activo || !$('#slot')) return; $('#slot').textContent = figuras[k++ % figuras.length]; setTimeout(girar, 110); };
     girar();
-    const minimo = new Promise(r => setTimeout(r, 2800));
     try {
-      const [r] = await Promise.all([api('sortear', { nombre: yo, token: miToken() }), minimo]);
-      // desacelera y se detiene en el resultado
-      for (const v of [110, 160, 230, 320, 430]) { vel = v; await new Promise(res => setTimeout(res, v)); }
+      const [r] = await Promise.all([api('sortear', { nombre: yo, token: miToken() }), new Promise(res => setTimeout(res, 2000))]);
       activo = false;
-      const p = prog(yo); p.asignado = r.asignado; if (!p.fin) p.fin = Date.now(); guardar(yo, p);
-      vistaResultado(yo, true);
+      const p = prog(yo); p.asignado = r.asignado; guardar(yo, p);
+      vistaReto(yo, 2);
     } catch (e) {
       activo = false;
       if (e.status === 409 && /otro celular/.test(e.message)) store.del('as_yo');
@@ -858,6 +864,24 @@ RENDER.diferencias = (z, n, ganar) => {
   };
 };
 
+/* Mensaje cifrado: el nombre del amigo secreto con cada letra corrida una posición (A→B) */
+RENDER.cifrado = (z, n, ganar) => {
+  const plano = n.asignado.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z]/g, '');
+  const cifra = [...plano].map(c => String.fromCharCode((c.charCodeAt(0) - 65 + 1) % 26 + 65));
+  let reveladas = 0;
+  z.innerHTML = `<div class="letras ${cifra.length > 7 ? 'chicas' : ''}">${cifra.map(c => `<span>${c}</span>`).join('')}</div>
+    <div class="huecos" id="huecos">${cifra.map(() => '<span>_</span>').join('')}</div>
+    <form class="resp"><input autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Escribe el nombre" required><button class="btn">Comprobar</button></form>`;
+  const f = $('form', z), inp = $('input', z);
+  f.onsubmit = e => { e.preventDefault(); if (norm(inp.value) === norm(n.asignado)) { inp.blur(); ganar(); } else fallo(inp, '¡Casi! Retrocede cada letra una posición 🔐'); };
+  // Cada ayuda revela una letra más
+  z._ayuda = () => {
+    if (reveladas < plano.length) reveladas++;
+    $$('#huecos span', z).forEach((s, k) => { if (k < reveladas) { s.textContent = plano[k]; s.classList.add('ok'); } });
+    if (reveladas === plano.length) toast('¡Ya tienes todas las letras! Escríbelo 👆', 2500);
+  };
+};
+
 /* Ruleta */
 const CATS = [['🧩', 'Adivinanza'], ['🌎', 'Cultura general'], ['➗', 'Matemática'], ['🔤', 'Descifra la palabra'], ['🔍', 'Encuentra el elemento'], ['🧠', 'Lógica']];
 RENDER.ruleta = (z, n, ganar) => {
@@ -899,8 +923,8 @@ const hora = ms => ms ? new Date(ms).toLocaleTimeString('es-PE', { hour: '2-digi
 const duracion = (a, b) => { if (!a) return '—'; const s = Math.round(((b || ahoraServidor()) - a) / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
 function estadoJugador(f) {
-  if (f.asignado) return { txt: `✅ Sorteó (#${f.orden})`, cls: 'ok' };
-  if (f.completados >= 3) return { txt: '🎁 Listo para sortear', cls: 'oro' };
+  if (f.asignado && f.completados >= 3) return { txt: `✅ Descubrió a su amigo (#${f.orden})`, cls: 'ok' };
+  if (f.asignado) return { txt: `🔐 Descifrando a su amigo (#${f.orden})`, cls: 'oro' };
   if (f.desafio_actual) return { txt: `🎮 Jugando desafío ${f.desafio_actual}/3`, cls: 'juega' };
   if (f.completados > 0) return { txt: `🎮 Superó ${f.completados}/3`, cls: 'juega' };
   if (f.ocupado) return { txt: '👋 Eligió su nombre', cls: 'entro' };
@@ -919,7 +943,7 @@ async function vistaAdmin() {
   const ver = !!vistaAdmin.ver, filtro = vistaAdmin.filtro || 'todos';
   const L = datos.participantes;
   const enLinea = f => f.ultima_actividad && ahoraServidor() - f.ultima_actividad < 3 * 60 * 1000;
-  const sortearon = L.filter(f => f.asignado), listos = L.filter(f => !f.asignado && f.completados >= 3);
+  const sortearon = L.filter(f => f.asignado), listos = [];
   const jugando = L.filter(f => !f.asignado && f.completados < 3 && (f.desafio_actual || f.completados > 0));
   const sinEntrar = L.filter(f => !f.ocupado && !f.asignado && !f.completados);
   const recibidos = new Set(sortearon.map(f => f.asignado));

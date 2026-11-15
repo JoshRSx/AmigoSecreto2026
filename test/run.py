@@ -28,6 +28,10 @@ def solve(page, n, zona='#zona'):
         difs=page.evaluate('DIFS')
         for k in n['difs']:
             x,y=difs[k]; page.mouse.click(box['x']+x/300*box['width'], box['y']+y/220*box['height']); page.wait_for_timeout(80)
+    elif t=='cifrado':
+        letras=[e.inner_text() for e in page.query_selector_all(f'{zona} .letras span')]
+        plano=''.join(chr((ord(c)-65-1)%26+65) for c in letras)
+        page.fill(f'{zona} input', plano.lower()); page.click(f'{zona} form button')
     elif t=='ruleta':
         page.click(f'{zona} #girar'); page.wait_for_timeout(4500)
         cat=page.inner_text('.cat')

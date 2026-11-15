@@ -10,8 +10,8 @@ const hora = ms => ms ? new Date(ms).toLocaleTimeString('es-PE', { hour: '2-digi
 const duracion = (a, b) => { if (!a) return '—'; const s = Math.round(((b || ahoraServidor()) - a) / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
 function estadoJugador(f) {
-  if (f.asignado) return { txt: `✅ Sorteó (#${f.orden})`, cls: 'ok' };
-  if (f.completados >= 3) return { txt: '🎁 Listo para sortear', cls: 'oro' };
+  if (f.asignado && f.completados >= 3) return { txt: `✅ Descubrió a su amigo (#${f.orden})`, cls: 'ok' };
+  if (f.asignado) return { txt: `🔐 Descifrando a su amigo (#${f.orden})`, cls: 'oro' };
   if (f.desafio_actual) return { txt: `🎮 Jugando desafío ${f.desafio_actual}/3`, cls: 'juega' };
   if (f.completados > 0) return { txt: `🎮 Superó ${f.completados}/3`, cls: 'juega' };
   if (f.ocupado) return { txt: '👋 Eligió su nombre', cls: 'entro' };
@@ -30,7 +30,7 @@ async function vistaAdmin() {
   const ver = !!vistaAdmin.ver, filtro = vistaAdmin.filtro || 'todos';
   const L = datos.participantes;
   const enLinea = f => f.ultima_actividad && ahoraServidor() - f.ultima_actividad < 3 * 60 * 1000;
-  const sortearon = L.filter(f => f.asignado), listos = L.filter(f => !f.asignado && f.completados >= 3);
+  const sortearon = L.filter(f => f.asignado), listos = [];
   const jugando = L.filter(f => !f.asignado && f.completados < 3 && (f.desafio_actual || f.completados > 0));
   const sinEntrar = L.filter(f => !f.ocupado && !f.asignado && !f.completados);
   const recibidos = new Set(sortearon.map(f => f.asignado));

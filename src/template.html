@@ -125,6 +125,10 @@ textarea{font-size:16px;font-weight:700;min-height:70px;resize:vertical}
 .celda.sel{background:var(--oro)}
 .celda.ok{background:#bfe8cf;color:var(--verde)}
 .celda.err{background:#ffc9c9}
+.letras.chicas span{width:32px;height:40px;font-size:19px}
+.huecos{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:-4px 0 6px}
+.huecos span{width:32px;text-align:center;font:900 22px 'Nunito',system-ui,sans-serif;color:#cdbfa8;border-bottom:3px solid #e0cfae}
+.huecos span.ok{color:var(--rojo);border-color:var(--rojo)}
 .celda.pista{background:var(--oro);animation:latido .8s infinite}
 /* Memoria */
 .memoria{display:grid;gap:10px;margin-top:12px}
@@ -500,6 +504,24 @@ RENDER.diferencias = (z, n, ganar) => {
     const k = [...faltan][0]; if (!k) return; const [dx, dy] = DIFS[k];
     $('.marcas', svgMod).insertAdjacentHTML('beforeend', `<circle class="hint" cx="${dx}" cy="${dy}" r="24" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="6 5"/>`);
     toast('Mira dentro del círculo ✨', 2000); setTimeout(() => { const h = $('.hint', svgMod); h && h.remove(); }, 2500);
+  };
+};
+
+/* Mensaje cifrado: el nombre del amigo secreto con cada letra corrida una posición (A→B) */
+RENDER.cifrado = (z, n, ganar) => {
+  const plano = n.asignado.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z]/g, '');
+  const cifra = [...plano].map(c => String.fromCharCode((c.charCodeAt(0) - 65 + 1) % 26 + 65));
+  let reveladas = 0;
+  z.innerHTML = `<div class="letras ${cifra.length > 7 ? 'chicas' : ''}">${cifra.map(c => `<span>${c}</span>`).join('')}</div>
+    <div class="huecos" id="huecos">${cifra.map(() => '<span>_</span>').join('')}</div>
+    <form class="resp"><input autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Escribe el nombre" required><button class="btn">Comprobar</button></form>`;
+  const f = $('form', z), inp = $('input', z);
+  f.onsubmit = e => { e.preventDefault(); if (norm(inp.value) === norm(n.asignado)) { inp.blur(); ganar(); } else fallo(inp, '¡Casi! Retrocede cada letra una posición 🔐'); };
+  // Cada ayuda revela una letra más
+  z._ayuda = () => {
+    if (reveladas < plano.length) reveladas++;
+    $$('#huecos span', z).forEach((s, k) => { if (k < reveladas) { s.textContent = plano[k]; s.classList.add('ok'); } });
+    if (reveladas === plano.length) toast('¡Ya tienes todas las letras! Escríbelo 👆', 2500);
   };
 };
 

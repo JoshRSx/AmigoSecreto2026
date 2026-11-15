@@ -71,7 +71,7 @@ function apiLocal(accion, d) {
       let cand = NOMBRES.filter(n => n !== d.nombre && !tomados.has(n));
       if (pendientes.length === 2) { const otro = pendientes.find(n => n !== d.nombre); if (cand.includes(otro)) cand = [otro]; }
       if (!cand.length) return fallo('No quedan personas para sortear. Avísale al anfitrión.', 409);
-      Object.assign(fila, { asignado: cand[Math.floor(Math.random() * cand.length)], orden: Math.max(0, ...NOMBRES.map(n => db[n].orden || 0)) + 1, sorteado_en: t, completados: 3, desafio_actual: null, ultima_actividad: t });
+      Object.assign(fila, { asignado: cand[Math.floor(Math.random() * cand.length)], orden: Math.max(0, ...NOMBRES.map(n => db[n].orden || 0)) + 1, sorteado_en: t, completados: Math.max(fila.completados, 2), desafio_actual: 3, ultima_actividad: t });
       save(); return ok({ asignado: fila.asignado, orden: fila.orden });
     }
     case 'admin': return ok({ inicio: null, ahora: t, participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, ...db[n], token: undefined })) });
@@ -168,8 +168,8 @@ function vistaInicio() {
       const r = await api('reclamar', { nombre: n, token: yoToken });
       store.set('as_yo', n);
       const p = prog(n);
-      if (r.asignado) { p.asignado = r.asignado; p.rondas = [true, true, true]; }
-      else if (r.completados) p.rondas = p.rondas.map((x, k) => x || k < r.completados);
+      if (r.asignado) p.asignado = r.asignado;
+      if (r.completados) p.rondas = p.rondas.map((x, k) => x || k < r.completados);
       guardar(n, p);
       vistaHub(n);
     } catch (e) { await modal(`<h3>No se pudo</h3><p>${esc(e.message)}</p>`, [{ t: 'OK' }]); ruta(); }
@@ -200,8 +200,8 @@ function vistaHub(yo) {
     const hecha = p.rondas[i], abierta = i === 0 || p.rondas[i - 1];
     return `<div class="ronda ${hecha ? 'hecha' : abierta ? 'abierta' : 'bloq'}">
       <div class="ronda-num">${hecha ? '✅' : abierta ? '🎁' : '🔒'}</div>
-      <div class="ronda-txt"><b>Desafío ${i + 1}</b><small>${hecha ? '¡Superado!' : abierta ? 'Listo para jugar' : 'Bloqueado'}</small></div>
-      ${!hecha && abierta ? `<button class="btn chico" data-ronda="${i}">Jugar</button>` : ''}</div>`;
+      <div class="ronda-txt"><b>Desafío ${i + 1}</b><small>${i === 2 ? (hecha ? '¡Descifrado!' : 'Descifra el nombre de tu amigo secreto') : hecha ? '¡Superado!' : abierta ? 'Listo para jugar' : 'Bloqueado'}</small></div>
+      ${!hecha && abierta ? `<button class="btn chico ${i === 2 ? 'oro' : ''}" data-ronda="${i}">${i === 2 ? '🔐 Descifrar' : 'Jugar'}</button>` : ''}</div>`;
   }).join('');
   const todas = p.rondas.every(Boolean);
   pantalla(`
@@ -210,28 +210,30 @@ function vistaHub(yo) {
     <section class="card">
       <div class="juego-tit">${P.icono} Tu juego</div>
       <h2>${esc(P.juego)}</h2>
-      <p class="desc">${esc(P.desc)} Supera los 3 desafíos para descubrir quién es tu amigo secreto.</p>
+      <p class="desc">${esc(P.desc)} Supera 2 desafíos y en el tercero descifra el nombre de tu amigo secreto.</p>
       ${rondas}
-      ${todas ? `<button class="btn oro" id="sortear">${p.asignado ? '🎁 Ver mi amigo secreto' : '🎁 ¡Descubre a tu amigo secreto!'}</button>` : ''}
+      ${todas && p.asignado ? `<button class="btn oro" id="sortear">🎁 Ver mi amigo secreto</button>` : ''}
     </section>
     <p class="enlace"><button class="link" id="cambiar">¿No eres ${esc(yo)}? Cambiar</button></p>`);
-  $$('[data-ronda]').forEach(b => b.onclick = () => vistaReto(yo, +b.dataset.ronda));
-  $('#sortear') && ($('#sortear').onclick = () => p.asignado ? vistaResultado(yo, false) : vistaSorteo(yo));
+  $$('[data-ronda]').forEach(b => b.onclick = () => +b.dataset.ronda === 2 ? vistaSorteo(yo) : vistaReto(yo, +b.dataset.ronda));
+  $('#sortear') && ($('#sortear').onclick = () => vistaResultado(yo, false));
   $('#cambiar').onclick = async () => {
     const i = await modal(`<h3>¿Cambiar de jugador?</h3><p>${esc(yo)} seguirá vinculado a este celular. Si te equivocaste de nombre, pídele al anfitrión que lo libere.</p>`, [{ t: 'Cancelar', cls: 'sec' }, { t: 'Cambiar' }]);
     if (i === 1) { store.del('as_yo'); ruta(); }
   };
   // Verifica en segundo plano que este celular sigue siendo dueño del nombre y si ya sorteó
   api('resultado', { nombre: yo, token: miToken() }).then(r => {
-    if (r.asignado && !p.asignado) { p.asignado = r.asignado; p.rondas = [true, true, true]; guardar(yo, p); vistaHub(yo); }
-    else if (r.completados > p.rondas.filter(Boolean).length && $('#sortear') === null && document.body.contains($('.ronda'))) { p.rondas = p.rondas.map((x, k) => x || k < r.completados); guardar(yo, p); vistaHub(yo); }
+    if (r.asignado && !p.asignado) { p.asignado = r.asignado; guardar(yo, p); }
+    if (r.completados > p.rondas.filter(Boolean).length && $('#sortear') === null && document.body.contains($('.ronda'))) { p.rondas = p.rondas.map((x, k) => x || k < r.completados); guardar(yo, p); vistaHub(yo); }
   }).catch(async e => {
     if (e.status === 409) { store.del('as_yo'); await modal(`<h3>Nombre liberado</h3><p>${esc(e.message)}</p>`, [{ t: 'OK' }]); ruta(); }
   });
 }
 
 function vistaReto(yo, i) {
-  const P = participante(yo), nivel = P.niveles[i];
+  const P = participante(yo);
+  if (i === 2 && !prog(yo).asignado) return vistaSorteo(yo);
+  const nivel = i === 2 ? { ...P.niveles[2], asignado: prog(yo).asignado } : P.niveles[i];
   pantalla(`
     <div class="topbar"><button id="volver">← Volver</button><span>Desafío ${i + 1} de 3</span></div>
     <section class="card reto">
@@ -275,7 +277,7 @@ function completarRonda(yo, i) {
   if (p.rondas.every(Boolean) && !p.fin) p.fin = Date.now();
   guardar(yo, p);
   sonido('bien'); fiesta(false);
-  setTimeout(() => vistaRegalo(yo, i), 700);
+  setTimeout(() => (i === 2 ? vistaResultado(yo, true) : vistaRegalo(yo, i)), 700);
 }
 
 function vistaRegalo(yo, i) {
@@ -285,8 +287,8 @@ function vistaRegalo(yo, i) {
       <h2>¡Superaste el desafío ${i + 1}!</h2>
       <p class="desc" id="tocaRegalo">Toca el regalo 👇</p>
       <button class="regalo-btn" id="regalo" aria-label="Abrir regalo">${SVG_REGALO}</button>
-      <div class="pista-grande frase" id="pista">“${frase(yo, i)}”<br><small style="font-size:16px;color:var(--gris);font-style:normal">${faltan ? `Te falta${faltan > 1 ? 'n' : ''} ${faltan} desafío${faltan > 1 ? 's' : ''} para descubrir a tu amigo secreto.` : '¡Ya puedes descubrir a tu amigo secreto!'}</small></div>
-      <button class="btn ${faltan ? 'verde' : 'oro'}" id="seguir" hidden>${faltan ? 'Continuar' : '🎁 ¡Descubrir ahora!'}</button>
+      <div class="pista-grande frase" id="pista">“${frase(yo, i)}”<br><small style="font-size:16px;color:var(--gris);font-style:normal">${faltan > 1 ? 'Te faltan 2 desafíos para descubrir a tu amigo secreto.' : '¡Ahora descifra el nombre de tu amigo secreto!'}</small></div>
+      <button class="btn ${faltan > 1 ? 'verde' : 'oro'}" id="seguir" hidden>${faltan > 1 ? 'Continuar' : '🔐 Ir al último desafío'}</button>
     </section>`);
   $('#regalo').onclick = () => {
     if ($('#regalo').classList.contains('abierto')) return;
@@ -294,37 +296,37 @@ function vistaRegalo(yo, i) {
     $('#tocaRegalo').style.visibility = 'hidden';
     $('#pista').classList.add('ver'); $('#seguir').hidden = false;
   };
-  $('#seguir').onclick = () => faltan ? vistaHub(yo) : vistaSorteo(yo);
+  $('#seguir').onclick = () => faltan > 1 ? vistaHub(yo) : vistaSorteo(yo);
 }
 
 function vistaSorteo(yo) {
   pantalla(`
     <section class="card centro">
-      <h2>¡Llegó el momento!</h2>
-      <p class="desc" style="font-size:18px">👀 Asegúrate de que <b>nadie más</b> esté viendo tu pantalla.</p>
+      <h2>¡Último desafío!</h2>
+      <p class="desc" style="font-size:18px">Vas a descifrar el nombre de tu amigo secreto.<br>👀 Asegúrate de que <b>nadie más</b> vea tu pantalla.</p>
       <div style="font-size:64px;margin:10px 0">🤫</div>
-      <button class="btn oro" id="listo">Estoy listo, ¡sortear!</button>
+      <button class="btn oro" id="listo">Estoy listo</button>
+      <p style="margin-top:10px"><button class="btn sec" id="volverHub">← Volver</button></p>
     </section>`);
+  $('#volverHub').onclick = () => vistaHub(yo);
   $('#listo').onclick = async () => {
+    if (prog(yo).asignado) return vistaReto(yo, 2);
     pantalla(`
       <section class="card centro">
         <p class="juego-tit">🎄 Sorteando… 🎄</p>
-        <h2>Tu amigo secreto es…</h2>
-        <div class="tragamonedas" id="slot">?</div>
-        <p class="desc" id="sub">🥁🥁🥁</p>
+        <h2>Eligiendo a tu amigo secreto</h2>
+        <div class="tragamonedas" id="slot">🎁</div>
+        <p class="desc">🥁🥁🥁</p>
       </section>`);
-    const otros = NOMBRES.filter(n => n !== yo);
-    let k = 0, activo = true, vel = 70;
-    const girar = () => { if (!activo) return; $('#slot').textContent = otros[k++ % otros.length]; sonido.tick && sonido.tick(); setTimeout(girar, vel); };
+    const figuras = ['🎁', '🎄', '⭐', '🔔', '⛄', '🦌'];
+    let k = 0, activo = true;
+    const girar = () => { if (!activo || !$('#slot')) return; $('#slot').textContent = figuras[k++ % figuras.length]; setTimeout(girar, 110); };
     girar();
-    const minimo = new Promise(r => setTimeout(r, 2800));
     try {
-      const [r] = await Promise.all([api('sortear', { nombre: yo, token: miToken() }), minimo]);
-      // desacelera y se detiene en el resultado
-      for (const v of [110, 160, 230, 320, 430]) { vel = v; await new Promise(res => setTimeout(res, v)); }
+      const [r] = await Promise.all([api('sortear', { nombre: yo, token: miToken() }), new Promise(res => setTimeout(res, 2000))]);
       activo = false;
-      const p = prog(yo); p.asignado = r.asignado; if (!p.fin) p.fin = Date.now(); guardar(yo, p);
-      vistaResultado(yo, true);
+      const p = prog(yo); p.asignado = r.asignado; guardar(yo, p);
+      vistaReto(yo, 2);
     } catch (e) {
       activo = false;
       if (e.status === 409 && /otro celular/.test(e.message)) store.del('as_yo');

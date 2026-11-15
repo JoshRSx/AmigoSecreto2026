@@ -186,7 +186,7 @@ switch ($accion) {
 
             $elegido = $candidatos[random_int(0, count($candidatos) - 1)];
             $t = ahora_db();
-            $st = $pdo->prepare('UPDATE amigo_participantes SET asignado = ?, orden = ?, sorteado_en = ?, completados = 3, desafio_actual = NULL, ultima_actividad = ? WHERE nombre = ?');
+            $st = $pdo->prepare('UPDATE amigo_participantes SET asignado = ?, orden = ?, sorteado_en = ?, completados = GREATEST(completados, 2), desafio_actual = 3, ultima_actividad = ? WHERE nombre = ?');
             $st->execute([$elegido, $maxOrden + 1, $t, $t, $nombre]);
             $pdo->commit();
             responder(['ok' => true, 'asignado' => $elegido, 'orden' => $maxOrden + 1]);

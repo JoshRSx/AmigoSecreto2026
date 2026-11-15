@@ -24,7 +24,11 @@ with sync_playwright() as p:
     d.reload(); d.wait_for_timeout(800); print('recargar no vuelve a pedir clave:', not d.is_visible('#fclave'))
     elegir(d,'Dante'); jugar(d,'Dante',1); d.click('[data-ronda="1"]'); d.wait_for_timeout(300); d.click('#ayudaBtn'); d.wait_for_timeout(400)
     n=ctx(b); clave(n,'151126'); elegir(n,'Noemí')
-    g=ctx(b); clave(g,'151126'); elegir(g,'Gabriel'); jugar(g,'Gabriel',3); g.click('#listo'); g.wait_for_selector('#nombreRes', timeout=15000); amigo=g.inner_text('#nombreRes')
+    g=ctx(b); clave(g,'151126'); elegir(g,'Gabriel'); jugar(g,'Gabriel',2); g.click('#listo'); g.wait_for_selector('.huecos', timeout=15000)
+    g.screenshot(path='test/50_cifrado.png'); g.click('#ayudaBtn'); g.click('#ayudaBtn'); g.wait_for_timeout(300); print('ayuda revela letras:', g.inner_text('#huecos').replace('\n',' ')); g.screenshot(path='test/51_cifrado_ayuda.png')
+    # mientras descifra, el panel lo muestra como 'Descifrando'
+    a0=ctx(b); clave(a0,os.environ['CLAVE_ADMIN']); a0.wait_for_selector('.kpis'); print('panel mientras descifra:', a0.inner_text('.card.jug:has([data-menu="Gabriel"]) .estado-tag'))
+    solve(g, P['Gabriel']['niveles'][2]); g.wait_for_selector('#nombreRes', timeout=15000); amigo=g.inner_text('#nombreRes'); g.screenshot(path='test/52_resultado.png', full_page=True)
     a=ctx(b); clave(a,os.environ['CLAVE_ADMIN']); a.wait_for_selector('.kpis'); a.wait_for_timeout(300)
     txt=a.inner_text('#app')
     def card(nombre): return a.inner_text(f'.card.jug:has([data-menu="{nombre}"])')
