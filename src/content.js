@@ -55,7 +55,7 @@ module.exports = {
       niveles: [
         { tipo: 'texto', enunciado: 'Papá Noel resolvió esta ecuación. ¿Cuánto vale x?', visual: serie('3x + 5 = 20'), ayuda: 'Primero resta 5 a ambos lados.', r: ['5', 'cinco', 'x5'] },
         { tipo: 'opciones', enunciado: 'La estrella del árbol es dorada. ¿Cuál es el símbolo químico del oro?', opciones: ['Ag', 'Au', 'Or', 'O'], correcta: 1, ayuda: 'Viene del latín «aurum».' },
-        { tipo: 'sopa', enunciado: 'Encuentra los 3 cursos escondidos', palabras: ['QUIMICA', 'HISTORIA', 'ARTE'], tam: 8, semilla: 41 },
+        { tipo: 'sopa', enunciado: 'Encuentra los 3 cursos escondidos', palabras: ['QUIMICA', 'HISTORIA', 'ARTE'], tam: 8, semilla: 41, ayuda: 'Las palabras pueden ir de izquierda a derecha, de arriba abajo o en diagonal. La ayuda marca dónde empieza una.' },
       ],
     },
     {
@@ -71,7 +71,7 @@ module.exports = {
       nombre: 'Guillermo', icono: '📹', juego: 'Central de monitoreo',
       desc: 'Revisa las cámaras, activa la alarma y ubica al intruso.',
       niveles: [
-        { tipo: 'diferencias', enunciado: 'Cámara 1: encuentra las 4 cosas que cambiaron', difs: ['ventana', 'nariz', 'regalo', 'esfera'] },
+        { tipo: 'diferencias', enunciado: 'Cámara 1: encuentra las 3 cosas que cambiaron', difs: ['ventana', 'nariz', 'regalo'], ayuda: 'Fíjate en la casa, el muñeco de nieve y los regalos.' },
         { tipo: 'candado', enunciado: 'Desactiva la alarma con el código', visual: lista(['1.º ¿Cuánto es 10 − 9?', '2.º Colores de un semáforo', '3.º Ruedas de un auto', '4.º Lados de un hexágono']), ayuda: 'Un hexágono tiene 6 lados.', r: ['1346'] },
         { tipo: 'opciones', enunciado: 'Un intruso pasó por 3 cámaras. La cámara 2 lo vio primero. La cámara 1 lo vio después que la 3. <b>¿Cuál lo vio al final?</b>', opciones: ['Cámara 1', 'Cámara 2', 'Cámara 3'], correcta: 0, ayuda: 'Ordena: primero la 2, luego…' },
       ],
@@ -80,9 +80,9 @@ module.exports = {
       nombre: 'Josefina', icono: '🍲', juego: 'La cocina navideña',
       desc: 'Juegos de la cocina y la casa. ¡Tómate tu tiempo!',
       niveles: [
-        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 3 parejas', pares: ['🍳', '🥄', '🍲'], vista: 8 },
-        { tipo: 'opciones', enunciado: '¿Qué ingrediente <b>NO</b> va en el chocolate caliente?', opciones: ['Leche', 'Cacao', 'Azúcar', 'Cebolla'], correcta: 3 },
-        { tipo: 'opciones', enunciado: '¿Qué preparamos con esto en Navidad?', visual: emojis('🥛 + 🍫'), opciones: ['Chocolatada', 'Ensalada', 'Sopa'], correcta: 0 },
+        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 3 parejas', pares: ['🍳', '🥄', '🍲'], vista: 8, ayuda: 'Toca dos cartas iguales. La ayuda te muestra las cartas otra vez.' },
+        { tipo: 'opciones', enunciado: '¿Qué ingrediente <b>NO</b> va en el chocolate caliente?', opciones: ['Leche', 'Cacao', 'Azúcar', 'Cebolla'], correcta: 3, ayuda: 'Una de estas se usa para el arroz o la ensalada, no para algo dulce.' },
+        { tipo: 'opciones', enunciado: '¿Qué preparamos con esto en Navidad?', visual: emojis('🥛 + 🍫'), opciones: ['Chocolatada', 'Ensalada', 'Sopa'], correcta: 0, ayuda: 'Leche con chocolate, se toma con panetón.' },
       ],
     },
     {
@@ -98,8 +98,8 @@ module.exports = {
       nombre: 'Noemí', icono: '✏️', juego: 'Clase de Navidad',
       desc: 'Ortografía, útiles y adivinanzas de la profe.',
       niveles: [
-        { tipo: 'opciones', enunciado: 'Corrige la tarea: ¿cuál está bien escrita?', opciones: ['Nabidad', 'Navidad', 'Nabidat', 'Navidat'], correcta: 1 },
-        { tipo: 'sopa', enunciado: 'Encuentra los 3 útiles escolares', palabras: ['LAPIZ', 'CUADERNO', 'PIZARRA'], tam: 8, semilla: 52 },
+        { tipo: 'opciones', enunciado: 'Corrige la tarea: ¿cuál está bien escrita?', opciones: ['Nabidad', 'Navidad', 'Nabidat', 'Navidat'], correcta: 1, ayuda: 'Se escribe con V de «vela» y termina en D.' },
+        { tipo: 'sopa', enunciado: 'Encuentra los 3 útiles escolares', palabras: ['LAPIZ', 'CUADERNO', 'PIZARRA'], tam: 8, semilla: 52, ayuda: 'La ayuda marca la primera letra de una palabra.' },
         { tipo: 'texto', enunciado: 'Tengo hojas y no soy árbol, tengo lomo y no soy caballo. ¿Qué soy?', ayuda: 'Está en la mochila y en la biblioteca.', r: ['libro', 'libros'] },
       ],
     },
@@ -108,16 +108,16 @@ module.exports = {
       desc: 'Letras, plurales y memoria de salón de clases.',
       niveles: [
         { tipo: 'texto', enunciado: 'Ordena las letras', visual: letras('L A U C E S E'), ayuda: 'Ahí trabajas de lunes a viernes.', r: ['escuela'] },
-        { tipo: 'opciones', enunciado: '¿Cuál es el plural correcto de «lápiz»?', opciones: ['Lápizes', 'Lápices', 'Lápiz', 'Lapises'], correcta: 1 },
-        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 6 parejas', pares: ['🍎', '📚', '✏️', '🎒', '📏', '🖍️'], vista: 6 },
+        { tipo: 'opciones', enunciado: '¿Cuál es el plural correcto de «lápiz»?', opciones: ['Lápizes', 'Lápices', 'Lápiz', 'Lapises'], correcta: 1, ayuda: 'Como «luz → luces»: la Z cambia a C.' },
+        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 4 parejas', pares: ['🍎', '📚', '✏️', '🎒'], vista: 6, ayuda: 'La ayuda te muestra las cartas otra vez.' },
       ],
     },
     {
       nombre: 'Fernando', icono: '🖥️', juego: 'Soporte técnico navideño',
       desc: 'Redes, puertos y coordenadas para el jefe de sistemas.',
       niveles: [
-        { tipo: 'opciones', enunciado: '¿Qué significan las siglas «WWW»?', opciones: ['World Wide Web', 'Wireless Web Window', 'World Web Wire', 'Wide Wireless Web'], correcta: 0 },
-        { tipo: 'candado', enunciado: 'Abre el rack del servidor', visual: lista(['Los dos primeros dígitos: el puerto de HTTP', 'Los dos últimos dígitos: el puerto de SSH']), ayuda: 'HTTP usa el 80.', r: ['8022'] },
+        { tipo: 'opciones', enunciado: '¿Qué significan las siglas «WWW»?', opciones: ['World Wide Web', 'Wireless Web Window', 'World Web Wire', 'Wide Wireless Web'], correcta: 0, ayuda: '«Red mundial» en inglés.' },
+        { tipo: 'candado', enunciado: 'Abre el rack del servidor', visual: lista(['Los dos primeros dígitos: el puerto de HTTP', 'Los dos últimos dígitos: el puerto de SSH']), ayuda: 'HTTP usa el 80 y SSH el 22.', r: ['8022'] },
         { tipo: 'texto', enunciado: 'Sigue las coordenadas: ¿dónde guardamos los archivos?', visual: coordenadas(['N X T R', 'Q U M B', 'E L O P', 'K S D I'], 'A1 · B2 · B4 · C1'), ayuda: 'A1 es la fila A, columna 1.', r: ['nube', 'lanube'] },
       ],
     },
@@ -125,36 +125,36 @@ module.exports = {
       nombre: 'Valeria', icono: '🧸', juego: 'El taller de Papá Noel',
       desc: 'Juegos con dibujos. ¡Pide ayuda si la necesitas!',
       niveles: [
-        { tipo: 'memoria', enunciado: 'Encuentra las parejas', pares: ['🎄', '⭐', '🎁'], vista: 6 },
-        { tipo: 'diferencias', enunciado: 'Encuentra las 3 diferencias', difs: ['estrella', 'luna', 'puerta'] },
-        { tipo: 'opciones', enunciado: '¿Cuántos regalos hay?', visual: emojis('🎁🎁🎁🎁🎁'), opciones: ['3', '4', '5', '6'], correcta: 2 },
+        { tipo: 'memoria', enunciado: 'Encuentra las parejas', pares: ['🎄', '⭐', '🎁'], vista: 6, ayuda: 'La ayuda te muestra las cartas otra vez.' },
+        { tipo: 'diferencias', enunciado: 'Encuentra las 3 diferencias', difs: ['estrella', 'luna', 'puerta'], ayuda: 'Mira el cielo, el árbol y la casa.' },
+        { tipo: 'opciones', enunciado: '¿Cuántos regalos hay?', visual: emojis('🎁🎁🎁🎁🎁'), opciones: ['3', '4', '5', '6'], correcta: 2, ayuda: 'Cuéntalos con tu dedito: uno, dos, tres…' },
       ],
     },
     {
       nombre: 'Cesar', icono: '🔬', juego: 'Laboratorio navideño',
       desc: 'Muestras, palabras y secuencias de laboratorio.',
       niveles: [
-        { tipo: 'opciones', enunciado: '¿Qué grupo sanguíneo es el donante universal?', opciones: ['O−', 'AB+', 'A+', 'B−'], correcta: 0 },
+        { tipo: 'opciones', enunciado: '¿Qué grupo sanguíneo es el donante universal?', opciones: ['O−', 'AB+', 'A+', 'B−'], correcta: 0, ayuda: 'Es el grupo O.' },
         { tipo: 'texto', enunciado: 'Ordena las letras', visual: letras('R O T A L O B I R A O'), ayuda: 'Donde trabajas con muestras.', r: ['laboratorio'] },
-        { tipo: 'texto', enunciado: 'Un cultivo crece así. ¿Qué número sigue?', visual: serie('2 – 6 – 18 – 54 – ?'), ayuda: 'Cada número se multiplica por 3.', r: ['162'] },
+        { tipo: 'texto', enunciado: 'Un cultivo crece así. ¿Qué número sigue?', visual: serie('3 – 6 – 12 – 24 – ?'), ayuda: 'Cada número es el doble del anterior.', r: ['48', 'cuarentayocho'] },
       ],
     },
     {
       nombre: 'Jhency', icono: '🏥', juego: 'Guardia en pediatría',
       desc: 'Retos del hospital del niño.',
       niveles: [
-        { tipo: 'opciones', enunciado: '¿Cuál es la temperatura normal del cuerpo?', opciones: ['36,5 °C', '40 °C', '30 °C', '42 °C'], correcta: 0 },
+        { tipo: 'opciones', enunciado: '¿Cuál es la temperatura normal del cuerpo?', opciones: ['36,5 °C', '40 °C', '30 °C', '42 °C'], correcta: 0, ayuda: 'A partir de 38 °C ya es fiebre.' },
         { tipo: 'opciones', enunciado: 'Tres niños en pediatría: uno con yeso, otro con vendaje y otro con curita. <b>¿Quién tiene yeso?</b>', visual: lista(['Leo no tiene yeso ni vendaje.', 'Mía no tiene yeso.']), opciones: ['Leo', 'Mía', 'Sol'], correcta: 2, ayuda: '¿Qué tiene Leo entonces?' },
-        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 6 parejas', pares: ['🩺', '💉', '🌡️', '🧸', '💊', '🩹'], vista: 6 },
+        { tipo: 'memoria', enunciado: 'Memoriza y encuentra las 4 parejas', pares: ['🩺', '💉', '🌡️', '🧸'], vista: 6, ayuda: 'La ayuda te muestra las cartas otra vez.' },
       ],
     },
     {
       nombre: 'Juliett', icono: '🍳', juego: 'La tienda de utensilios',
       desc: 'Atiende a los clientes de la tienda navideña.',
       niveles: [
-        { tipo: 'opciones', enunciado: 'Un cliente quiere servir la sopa de Navidad. ¿Qué le recomiendas?', opciones: ['Cucharón', 'Tenedor', 'Espátula', 'Pinza'], correcta: 0 },
-        { tipo: 'candado', enunciado: 'Caja registradora: escribe el precio final con 4 dígitos', visual: lista(['Un juego de ollas cuesta S/ 1000.', 'Tiene 20 % de descuento.']), ayuda: 'El 20 % de 1000 es 200. Ej.: S/ 950 se escribe 0950.', r: ['0800'] },
-        { tipo: 'sopa', enunciado: 'Encuentra los 4 utensilios', palabras: ['OLLA', 'SARTEN', 'CUCHARA', 'TAZA'], tam: 8, semilla: 63 },
+        { tipo: 'opciones', enunciado: 'Un cliente quiere servir la sopa de Navidad. ¿Qué le recomiendas?', opciones: ['Cucharón', 'Tenedor', 'Espátula', 'Pinza'], correcta: 0, ayuda: 'Es una cuchara grande y honda.' },
+        { tipo: 'candado', enunciado: 'Caja registradora: ¿cuál es el precio final?', visual: lista(['Un juego de ollas cuesta S/ 1250.', 'Tiene S/ 250 de descuento.']), ayuda: 'Resta: 1250 − 250.', r: ['1000'] },
+        { tipo: 'sopa', enunciado: 'Encuentra los 3 utensilios', palabras: ['OLLA', 'SARTEN', 'TAZA'], tam: 7, semilla: 63, ayuda: 'La ayuda marca la primera letra de una palabra.' },
       ],
     },
     {
@@ -168,28 +168,28 @@ module.exports = {
 // Desafíos de la ruleta de Ashley (uno por categoría y nivel)
 const R = [
   [
-    { tipo: 'texto', enunciado: 'Blanca por dentro, verde por fuera; si quieres que te lo diga, espera. ¿Qué es?', r: ['pera'] },
-    { tipo: 'texto', enunciado: '¿Cuál es la capital del Perú?', r: ['lima'] },
-    { tipo: 'texto', enunciado: '¿Cuánto es 7 × 8?', r: ['56', 'cincuentayseis', 'cincuenta y seis'] },
-    { tipo: 'texto', enunciado: 'Ordena estas letras:', visual: letras('R O G A L E'), r: ['regalo'] },
-    { tipo: 'opciones', enunciado: '¿Cuál sobra?', opciones: ['🍎', '🍌', '🚗', '🍇'], correcta: 2 },
-    { tipo: 'texto', enunciado: 'Si hoy es domingo, ¿qué día será pasado mañana?', r: ['martes'] },
+    { tipo: 'texto', enunciado: 'Blanca por dentro, verde por fuera; si quieres que te lo diga, espera. ¿Qué es?', r: ['pera'], ayuda: 'La respuesta está escondida en la última palabra.' },
+    { tipo: 'texto', enunciado: '¿Cuál es la capital del Perú?', r: ['lima'], ayuda: 'Ahí queda el Jockey Plaza.' },
+    { tipo: 'texto', enunciado: '¿Cuánto es 7 × 8?', r: ['56', 'cincuentayseis', 'cincuenta y seis'], ayuda: '7 × 8 = 7 × 4 × 2 = 28 × 2.' },
+    { tipo: 'texto', enunciado: 'Ordena estas letras:', visual: letras('R O G A L E'), r: ['regalo'], ayuda: 'Lo que hay debajo del árbol.' },
+    { tipo: 'opciones', enunciado: '¿Cuál sobra?', opciones: ['🍎', '🍌', '🚗', '🍇'], correcta: 2, ayuda: 'Tres se comen y uno no.' },
+    { tipo: 'texto', enunciado: 'Si hoy es domingo, ¿qué día será pasado mañana?', r: ['martes'], ayuda: 'Mañana es lunes…' },
   ],
   [
-    { tipo: 'texto', enunciado: 'Oro parece, plata no es. ¿Qué es?', r: ['platano', 'banana', 'banano'] },
-    { tipo: 'texto', enunciado: '¿En qué país está Machu Picchu?', r: ['peru'] },
-    { tipo: 'texto', enunciado: '¿Cuánto es 15 + 27?', r: ['42', 'cuarentaydos', 'cuarenta y dos'] },
-    { tipo: 'texto', enunciado: 'Ordena estas letras:', visual: letras('Z A P'), r: ['paz'] },
-    { tipo: 'opciones', enunciado: '¿Cuál NO es un color?', opciones: ['Rojo', 'Azul', 'Mesa', 'Verde'], correcta: 2 },
-    { tipo: 'texto', enunciado: 'Tengo 3 manzanas y me como una. ¿Cuántas me quedan?', r: ['2', 'dos'] },
+    { tipo: 'texto', enunciado: 'Oro parece, plata no es. ¿Qué es?', r: ['platano', 'banana', 'banano'], ayuda: 'Junta «plata» y «no es».' },
+    { tipo: 'texto', enunciado: '¿En qué país está Machu Picchu?', r: ['peru'], ayuda: '¡Es el nuestro!' },
+    { tipo: 'texto', enunciado: '¿Cuánto es 15 + 27?', r: ['42', 'cuarentaydos', 'cuarenta y dos'], ayuda: '15 + 25 = 40, y faltan 2.' },
+    { tipo: 'texto', enunciado: 'Ordena estas letras:', visual: letras('Z A P'), r: ['paz'], ayuda: 'Lo contrario de la guerra.' },
+    { tipo: 'opciones', enunciado: '¿Cuál NO es un color?', opciones: ['Rojo', 'Azul', 'Mesa', 'Verde'], correcta: 2, ayuda: 'Uno es un mueble.' },
+    { tipo: 'texto', enunciado: 'Tengo 3 manzanas y me como una. ¿Cuántas me quedan?', r: ['2', 'dos'], ayuda: '3 − 1' },
   ],
   [
-    { tipo: 'texto', enunciado: 'Vuela sin alas, silba sin boca y no lo puedes ver. ¿Qué es?', r: ['viento', 'aire'] },
-    { tipo: 'texto', enunciado: '¿Cuántos días tiene diciembre?', r: ['31', 'treintayuno', 'treinta y uno'] },
-    { tipo: 'texto', enunciado: '¿Cuánto es 100 − 37?', r: ['63', 'sesentaytres', 'sesenta y tres'] },
-    { tipo: 'texto', enunciado: 'Ordena estas letras:', visual: letras('A L E V'), r: ['vela'] },
-    { tipo: 'opciones', enunciado: '¿Qué NO llevarías a la playa?', opciones: ['Sombrilla', 'Toalla', 'Bufanda', 'Bloqueador'], correcta: 2 },
-    { tipo: 'texto', enunciado: 'Un padre y su hijo suman 36 años. El padre tiene 30 años más que el hijo. ¿Cuántos años tiene el hijo?', r: ['3', 'tres'] },
+    { tipo: 'texto', enunciado: 'Vuela sin alas, silba sin boca y no lo puedes ver. ¿Qué es?', r: ['viento', 'aire'], ayuda: 'Mueve las hojas de los árboles.' },
+    { tipo: 'texto', enunciado: '¿Cuántos días tiene diciembre?', r: ['31', 'treintayuno', 'treinta y uno'], ayuda: 'Año Nuevo es el día después del último.' },
+    { tipo: 'texto', enunciado: '¿Cuánto es 100 − 37?', r: ['63', 'sesentaytres', 'sesenta y tres'], ayuda: '100 − 40 = 60, y súmale 3.' },
+    { tipo: 'texto', enunciado: 'Ordena estas letras:', visual: letras('A L E V'), r: ['vela'], ayuda: 'Se enciende en la mesa de Nochebuena.' },
+    { tipo: 'opciones', enunciado: '¿Qué NO llevarías a la playa?', opciones: ['Sombrilla', 'Toalla', 'Bufanda', 'Bloqueador'], correcta: 2, ayuda: 'Una se usa cuando hace frío.' },
+    { tipo: 'texto', enunciado: '¿Cuántas patas tiene una araña?', r: ['8', 'ocho'], ayuda: 'Más que un perro y un gato juntos.' },
   ],
 ];
 module.exports.participantes.find((p) => p.nombre === 'Ashley').niveles.forEach((n, i) => (n.retos = R[i]));

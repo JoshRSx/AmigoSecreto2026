@@ -190,11 +190,33 @@ function vistaReto(yo, i) {
       <div class="juego-tit">${P.icono} ${esc(P.juego)}</div>
       <h2>${nivel.enunciado}</h2>
       <div id="zona"></div>
-      ${nivel.ayuda ? `<button class="ayuda-btn" id="ayudaBtn">💡 Pedir ayuda</button><p class="ayuda" id="ayuda" hidden>${nivel.ayuda}</p>` : ''}
+      <div id="extras"></div>
     </section>`);
   $('#volver').onclick = () => vistaHub(yo);
-  if (nivel.ayuda) $('#ayudaBtn').onclick = () => { $('#ayuda').hidden = false; $('#ayudaBtn').remove(); };
-  RENDER[nivel.tipo]($('#zona'), nivel, () => completarRonda(yo, i));
+  const zona = $('#zona'), extras = $('#extras');
+  let terminado = false;
+  const ganar = () => { if (terminado) return; terminado = true; RETO = {}; completarRonda(yo, i); };
+  RENDER[nivel.tipo](zona, nivel, ganar);
+  // Pista: texto (si hay) + ayuda dentro del juego (memoria, sopa, diferencias)
+  if (nivel.ayuda || zona._ayuda) {
+    extras.insertAdjacentHTML('beforeend', `<button class="ayuda-btn" id="ayudaBtn">💡 Pedir ayuda</button>${nivel.ayuda ? `<p class="ayuda" id="ayuda" hidden>${nivel.ayuda}</p>` : ''}`);
+    $('#ayudaBtn').onclick = () => {
+      if (nivel.ayuda) $('#ayuda').hidden = false;
+      if (zona._ayuda) zona._ayuda(); else $('#ayudaBtn').remove();
+    };
+  }
+  // Nadie se queda trabado: tras 3 fallos o 2 minutos aparece "Saltar"
+  let fallos = 0;
+  const ofrecerSaltar = () => {
+    if (terminado || !document.body.contains(extras) || $('#saltarBtn')) return;
+    extras.insertAdjacentHTML('beforeend', `<button class="ayuda-btn" id="saltarBtn" style="border-style:solid">⏭️ Saltar este desafío</button>`);
+    $('#saltarBtn').onclick = async () => {
+      const r = await modal('<h3>¿Saltar?</h3><p>Pasarás al siguiente desafío.</p>', [{ t: 'Seguir intentando', cls: 'sec' }, { t: 'Saltar', cls: 'verde' }]);
+      if (r === 1) ganar();
+    };
+  };
+  RETO = { onFallo: () => { if (++fallos >= 3) ofrecerSaltar(); } };
+  setTimeout(ofrecerSaltar, 120000);
 }
 
 function completarRonda(yo, i) {
