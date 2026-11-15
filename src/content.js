@@ -149,7 +149,7 @@ module.exports = {
       ],
     },
     {
-      nombre: 'Juliett', icono: '🍳', juego: 'La tienda de utensilios',
+      nombre: 'Juliett', icono: '🎒', juego: 'La tienda de utensilios',
       desc: 'Atiende a los clientes de la tienda navideña.',
       niveles: [
         { tipo: 'opciones', enunciado: 'Un cliente quiere servir la sopa de Navidad. ¿Qué le recomiendas?', opciones: ['Cucharón', 'Tenedor', 'Espátula', 'Pinza'], correcta: 0, ayuda: 'Es una cuchara grande y honda.' },
