@@ -4,7 +4,7 @@ AMIGO SECRETO FAMILIAR 2026 — INSTALACIÓN EN EL HOSTING (PHP + MySQL)
 Archivos:
   index.html     la app
   api.php        el sorteo (servidor)
-  config.php     datos de la base, PIN, hora de inicio y tu WhatsApp
+  config.php     datos de la base, claves de ingreso, hora de inicio y tu WhatsApp
   instalar.sql   crea la tabla con los 14 participantes
   .htaccess      protege config.php e instalar.sql
 
@@ -15,12 +15,12 @@ Archivos:
    - Debe aparecer la tabla "participantes" con 14 filas. Revisa que "Noemí" tenga la tilde bien.
 
 2) CONFIGURACIÓN (config.php)
-   - db_name, db_user, db_pass: los de tu base. db_host casi siempre es 'localhost'.
-   - pin_admin: un PIN solo para ti.
-   - hora_inicio: ej. '2026-11-15 16:00' (hora de Lima). Antes de esa hora todos ven una
-     cuenta regresiva y nadie puede sortear. Vacío = abierto ya.
-   - whatsapp_anfitrion: ya viene con 51928504589 (Perú + tu número).
-   ⚠️ NO subas tu config.php con la contraseña real a GitHub (el repo es público).
+   - Solo completa db_name, db_user y db_pass (con el prefijo de cPanel, ej. 'tuusuario_amigo').
+     db_host casi siempre es 'localhost'.
+   - clave_jugadores y pin_admin: la clave de ingreso de todos y la tuya de anfitrión.
+   - hora_inicio (opcional): ej. '2026-11-15 16:00' (hora de Lima). Antes de esa hora todos ven
+     una cuenta regresiva y nadie puede sortear. Vacío = abierto ya.
+   ⚠️ NO subas config.php a GitHub (tiene tus claves). En el repo está config.ejemplo.php.
 
 3) SUBIR ARCHIVOS
    - Por el Administrador de archivos de cPanel o por FTP, sube los 5 archivos a una carpeta,
@@ -28,16 +28,19 @@ Archivos:
    - .htaccess empieza con punto: en el Administrador de archivos activa "Mostrar archivos ocultos".
 
 4) PROBAR (antes del domingo)
-   - Abre https://tudominio.com/amigo/api.php → debe responder {"ok":true,...}
+   - Abre https://tudominio.com/amigo/api.php → debe responder {"ok":true,"participantes":14}
      Si dice "No se pudo conectar a la base de datos", revisa config.php.
    - Abre https://tudominio.com/amigo/config.php → debe salir en blanco o "Forbidden" (correcto).
-   - Abre la app, entra con un nombre, juega y sortea. Luego en /#organizador (con tu PIN)
-     usa "Reiniciar todo el sorteo" para dejarlo limpio.
+   - Abre la app con la clave de jugadores, elige un nombre, juega y sortea.
+     Luego entra con tu clave de anfitrión y usa "Reiniciar todo el sorteo".
 
 5) EL DOMINGO
    - Comparte el link. Cada uno elige su nombre, juega sus 3 desafíos y sortea.
-   - Te avisan por WhatsApp a quién les tocó. En /#organizador ves quién falta.
-   - Si alguien se equivocó de nombre o cambió de celular: ⋯ → "Liberar".
+   - Todos entran con la clave de jugadores. Te avisan por WhatsApp quién es su amigo secreto.
+   - Tú entras con tu clave de anfitrión: ves quién eligió su nombre, en qué desafío va cada uno, ayudas,
+     saltos, tiempo, quién está en línea y (si quieres) el amigo secreto de cada uno.
+   - Si alguien se equivocó de nombre o cambió de celular: ⋯ → "Liberar" (conserva su avance).
    - Si hay que repetir el sorteo de alguien: ⋯ → "Anular" (su persona vuelve al bombo).
+   - Para empezar de cero con una persona: ⋯ → "Reiniciar".
 
-Para probar sin servidor: abre index.html con #demo al final (el PIN del panel en demo es: demo).
+Para probar sin servidor: abre index.html con #demo al final (claves en demo: 151126 y «demo»).

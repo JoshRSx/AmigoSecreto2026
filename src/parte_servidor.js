@@ -1,11 +1,12 @@
 /* ---------- conexión con el servidor ---------- */
 const API_URL = 'api.php';
-// #demo: simula el servidor dentro del navegador (para probar sin hosting). PIN del panel en demo: demo
-if (location.hash === '#demo') store.set('as_demo', true);
+// #demo: simula el servidor dentro del navegador (para probar sin hosting).
+// En demo, clave de jugadores: 151126 · clave de anfitrión: demo
+if (location.hash === '#demo') { if (!store.get('as_demo')) { store.del('as_clave'); store.del('as_rol'); } store.set('as_demo', true); }
 const DEMO = !!store.get('as_demo');
 const bannerDemo = () => DEMO ? `<div class="banner">🧪 MODO DEMO · sorteo simulado en este celular <button class="link osc" id="salirDemo" style="margin-left:6px">Salir</button></div>` : '';
 document.addEventListener('click', e => {
-  if (e.target.id === 'salirDemo') { store.del('as_demo'); store.del('as_yo'); location.hash = 'juego'; location.reload(); }
+  if (e.target.id === 'salirDemo') { ['as_demo', 'as_yo', 'as_clave', 'as_rol'].forEach(k => store.del(k)); location.hash = 'juego'; location.reload(); }
 });
 
 function miToken() {
@@ -15,47 +16,68 @@ function miToken() {
 }
 
 async function api(accion, datos = {}) {
-  if (DEMO) return apiLocal(accion, datos);
+  const cuerpo = { accion, clave: store.get('as_clave') || '', ...datos };
   let r, j;
-  try { r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accion, ...datos }), cache: 'no-store' }); }
-  catch (e) { throw Object.assign(new Error('Sin conexión. Revisa tu internet e intenta de nuevo.'), { status: 0 }); }
-  try { j = await r.json(); } catch (e) { throw Object.assign(new Error(`El servidor no respondió bien (${r.status}).`), { status: r.status }); }
-  if (!j.ok) throw Object.assign(new Error(j.error || 'Error del servidor'), { status: r.status });
+  try {
+    if (DEMO) j = await apiLocal(accion, cuerpo);
+    else {
+      try { r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo), cache: 'no-store' }); }
+      catch (e) { throw Object.assign(new Error('Sin conexión. Revisa tu internet e intenta de nuevo.'), { status: 0 }); }
+      try { j = await r.json(); } catch (e) { throw Object.assign(new Error(`El servidor no respondió bien (${r.status}).`), { status: r.status }); }
+      if (!j.ok) throw Object.assign(new Error(j.error || 'Error del servidor'), { status: r.status });
+    }
+  } catch (e) {
+    // Clave vencida o cambiada: volver a pedirla
+    if (e.status === 401 && accion !== 'entrar') { store.del('as_clave'); store.del('as_rol'); setTimeout(ruta, 0); }
+    throw e;
+  }
   return j;
 }
+// Avisos de progreso al servidor (no bloquean el juego si fallan)
+function avisar(yo, evento, desafio) { api('progreso', { nombre: yo, token: miToken(), evento, desafio }).catch(() => { }); }
 
 // Servidor simulado (misma lógica que api.php)
 function apiLocal(accion, d) {
-  const db = store.get('as_demo_db') || Object.fromEntries(NOMBRES.map(n => [n, { token: null, asignado: null, orden: null }]));
+  const vacio = () => ({ token: null, reclamado_en: null, desafio_actual: null, completados: 0, ayudas: 0, saltos: 0, inicio_juego: null, ultima_actividad: null, asignado: null, orden: null, sorteado_en: null });
+  const db = store.get('as_demo_db') || Object.fromEntries(NOMBRES.map(n => [n, vacio()]));
   const save = () => store.set('as_demo_db', db);
   const fallo = (m, s = 400) => Promise.reject(Object.assign(new Error(m), { status: s }));
-  const ok = o => new Promise(r => setTimeout(() => r({ ok: true, ...o }), 250));
+  const ok = o => new Promise(r => setTimeout(() => r({ ok: true, ...o }), 200));
+  const esAdmin = d.clave === 'demo', esJugador = esAdmin || d.clave === '151126', t = Date.now();
   const fila = db[d.nombre];
-  if (['reclamar', 'resultado', 'sortear'].includes(accion) && !fila) return fallo('Ese nombre no está en la lista.', 404);
-  if (['admin', 'liberar', 'anular', 'reiniciar'].includes(accion) && d.pin !== 'demo') return fallo('PIN incorrecto. (En demo es: demo)', 403);
+  if (accion === 'entrar') return esAdmin ? ok({ rol: 'admin' }) : esJugador ? ok({ rol: 'jugador' }) : fallo('Clave de ingreso incorrecta. (En demo: 151126, o «demo» para el anfitrión)', 401);
+  if (['admin', 'liberar', 'anular', 'reiniciar', 'reiniciar_jugador'].includes(accion)) { if (!esAdmin) return fallo('Clave de anfitrión incorrecta.', 403); }
+  else if (!esJugador) return fallo('Clave de ingreso incorrecta.', 401);
+  if (['reclamar', 'resultado', 'sortear', 'progreso'].includes(accion) && !fila) return fallo('Ese nombre no está en la lista.', 404);
+  if (['resultado', 'sortear', 'progreso'].includes(accion) && fila.token !== d.token) return fallo('Este nombre está vinculado a otro celular.', 409);
   switch (accion) {
-    case 'estado': return ok({ ahora: Date.now(), inicio: null, whatsapp: '', participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, termino: !!db[n].asignado })) });
+    case 'estado': return ok({ ahora: t, inicio: null, whatsapp: '', participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, termino: !!db[n].asignado })) });
     case 'reclamar':
       if (fila.token && fila.token !== d.token) return fallo('Este nombre ya se está usando en otro celular. Pídele al anfitrión que lo libere.', 409);
-      fila.token = d.token; save(); return ok({ asignado: fila.asignado });
-    case 'resultado':
-      if (fila.token !== d.token) return fallo('Este nombre está vinculado a otro celular.', 409);
-      return ok({ asignado: fila.asignado, orden: fila.orden });
+      if (!fila.token) Object.assign(fila, { token: d.token, reclamado_en: t, ultima_actividad: t });
+      save(); return ok({ asignado: fila.asignado, completados: fila.completados });
+    case 'resultado': return ok({ asignado: fila.asignado, orden: fila.orden, completados: fila.completados });
+    case 'progreso':
+      fila.ultima_actividad = t;
+      if (d.evento === 'inicio') { fila.desafio_actual = d.desafio; fila.inicio_juego = fila.inicio_juego || t; }
+      if (d.evento === 'completo') { fila.completados = Math.max(fila.completados, d.desafio); fila.desafio_actual = null; fila.inicio_juego = fila.inicio_juego || t; }
+      if (d.evento === 'ayuda') fila.ayudas++;
+      if (d.evento === 'salto') fila.saltos++;
+      save(); return ok({});
     case 'sortear': {
-      if (fila.token !== d.token) return fallo('Este nombre está vinculado a otro celular.', 409);
       if (fila.asignado) return ok({ asignado: fila.asignado, orden: fila.orden });
       const tomados = new Set(NOMBRES.map(n => db[n].asignado).filter(Boolean));
       const pendientes = NOMBRES.filter(n => !db[n].asignado);
       let cand = NOMBRES.filter(n => n !== d.nombre && !tomados.has(n));
       if (pendientes.length === 2) { const otro = pendientes.find(n => n !== d.nombre); if (cand.includes(otro)) cand = [otro]; }
       if (!cand.length) return fallo('No quedan personas para sortear. Avísale al anfitrión.', 409);
-      fila.asignado = cand[Math.floor(Math.random() * cand.length)];
-      fila.orden = Math.max(0, ...NOMBRES.map(n => db[n].orden || 0)) + 1; fila.sorteado_en = new Date().toLocaleString('es-PE'); save();
-      return ok({ asignado: fila.asignado, orden: fila.orden });
+      Object.assign(fila, { asignado: cand[Math.floor(Math.random() * cand.length)], orden: Math.max(0, ...NOMBRES.map(n => db[n].orden || 0)) + 1, sorteado_en: t, completados: 3, desafio_actual: null, ultima_actividad: t });
+      save(); return ok({ asignado: fila.asignado, orden: fila.orden });
     }
-    case 'admin': return ok({ inicio: null, ahora: Date.now(), participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, asignado: db[n].asignado, orden: db[n].orden, sorteado_en: db[n].sorteado_en || null })).sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99)) });
-    case 'liberar': fila.token = null; save(); return ok({});
+    case 'admin': return ok({ inicio: null, ahora: t, participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, ...db[n], token: undefined })) });
+    case 'liberar': Object.assign(fila, { token: null, reclamado_en: null }); save(); return ok({});
     case 'anular': Object.assign(fila, { asignado: null, orden: null, sorteado_en: null }); save(); return ok({});
+    case 'reiniciar_jugador': db[d.nombre] = vacio(); save(); return ok({});
     case 'reiniciar': store.del('as_demo_db'); return ok({});
   }
   return fallo('Acción desconocida.');
@@ -103,6 +125,28 @@ function vistaError(msg, reintentar) {
   $('#reint').onclick = reintentar || ruta;
 }
 
+function vistaClave() {
+  pantalla(`
+    ${HERO}${bannerDemo()}
+    <section class="card centro">
+      <h2>¡Bienvenido!</h2>
+      <p class="desc">Ingresa la clave del Amigo Secreto</p>
+      <form class="resp" id="fclave">
+        <input type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="• • • • • •" required style="text-align:center;letter-spacing:.3em;font-size:26px">
+        <button class="btn">Entrar 🎄</button>
+      </form>
+    </section>`);
+  $('#fclave').onsubmit = async e => {
+    e.preventDefault();
+    const inp = $('#fclave input'), v = inp.value.trim();
+    try {
+      const r = await api('entrar', { clave: v });
+      store.set('as_clave', v); store.set('as_rol', r.rol); sonido('bien');
+      ruta();
+    } catch (err) { fallo(inp, err.message); inp.value = ''; }
+  };
+}
+
 function vistaInicio() {
   const yoToken = miToken();
   const estado = Object.fromEntries((ESTADO?.participantes || []).map(p => [p.nombre, p]));
@@ -123,7 +167,10 @@ function vistaInicio() {
     try {
       const r = await api('reclamar', { nombre: n, token: yoToken });
       store.set('as_yo', n);
-      if (r.asignado) { const p = prog(n); p.asignado = r.asignado; p.rondas = [true, true, true]; guardar(n, p); }
+      const p = prog(n);
+      if (r.asignado) { p.asignado = r.asignado; p.rondas = [true, true, true]; }
+      else if (r.completados) p.rondas = p.rondas.map((x, k) => x || k < r.completados);
+      guardar(n, p);
       vistaHub(n);
     } catch (e) { await modal(`<h3>No se pudo</h3><p>${esc(e.message)}</p>`, [{ t: 'OK' }]); ruta(); }
   });
@@ -177,6 +224,7 @@ function vistaHub(yo) {
   // Verifica en segundo plano que este celular sigue siendo dueño del nombre y si ya sorteó
   api('resultado', { nombre: yo, token: miToken() }).then(r => {
     if (r.asignado && !p.asignado) { p.asignado = r.asignado; p.rondas = [true, true, true]; guardar(yo, p); vistaHub(yo); }
+    else if (r.completados > p.rondas.filter(Boolean).length && $('#sortear') === null && document.body.contains($('.ronda'))) { p.rondas = p.rondas.map((x, k) => x || k < r.completados); guardar(yo, p); vistaHub(yo); }
   }).catch(async e => {
     if (e.status === 409) { store.del('as_yo'); await modal(`<h3>Nombre liberado</h3><p>${esc(e.message)}</p>`, [{ t: 'OK' }]); ruta(); }
   });
@@ -197,11 +245,13 @@ function vistaReto(yo, i) {
   let terminado = false;
   const ganar = () => { if (terminado) return; terminado = true; RETO = {}; completarRonda(yo, i); };
   RENDER[nivel.tipo](zona, nivel, ganar);
+  avisar(yo, 'inicio', i + 1);
   // Pista: texto (si hay) + ayuda dentro del juego (memoria, sopa, diferencias)
   if (nivel.ayuda || zona._ayuda) {
     extras.insertAdjacentHTML('beforeend', `<button class="ayuda-btn" id="ayudaBtn">💡 Pedir ayuda</button>${nivel.ayuda ? `<p class="ayuda" id="ayuda" hidden>${nivel.ayuda}</p>` : ''}`);
     $('#ayudaBtn').onclick = () => {
       if (nivel.ayuda) $('#ayuda').hidden = false;
+      avisar(yo, 'ayuda', i + 1);
       if (zona._ayuda) zona._ayuda(); else $('#ayudaBtn').remove();
     };
   }
@@ -212,7 +262,7 @@ function vistaReto(yo, i) {
     extras.insertAdjacentHTML('beforeend', `<button class="ayuda-btn" id="saltarBtn" style="border-style:solid">⏭️ Saltar este desafío</button>`);
     $('#saltarBtn').onclick = async () => {
       const r = await modal('<h3>¿Saltar?</h3><p>Pasarás al siguiente desafío.</p>', [{ t: 'Seguir intentando', cls: 'sec' }, { t: 'Saltar', cls: 'verde' }]);
-      if (r === 1) ganar();
+      if (r === 1) { avisar(yo, 'salto', i + 1); ganar(); }
     };
   };
   RETO = { onFallo: () => { if (++fallos >= 3) ofrecerSaltar(); } };
@@ -221,6 +271,7 @@ function vistaReto(yo, i) {
 
 function completarRonda(yo, i) {
   const p = prog(yo); p.rondas[i] = true;
+  avisar(yo, 'completo', i + 1);
   if (p.rondas.every(Boolean) && !p.fin) p.fin = Date.now();
   guardar(yo, p);
   sonido('bien'); fiesta(false);

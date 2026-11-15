@@ -187,6 +187,32 @@ textarea{font-size:16px;font-weight:700;min-height:70px;resize:vertical}
 .fila .btn.chico{flex:1}
   .pista-grande.frase{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:22px;line-height:1.35;color:var(--verde)}
 .pista-grande.frase small{font-family:'Nunito',system-ui,sans-serif;font-weight:700;display:block;margin-top:10px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 10px}
+.kpi{border:2px solid #ead9bf;background:#fff;border-radius:12px;padding:8px 2px;cursor:pointer;font-family:'Nunito',system-ui,sans-serif;color:var(--tinta)}
+.kpi b{display:block;font-size:22px;font-weight:900}
+.kpi span{font-size:11px;font-weight:800;color:var(--gris);text-transform:uppercase}
+.kpi.act{border-color:var(--rojo);background:#ffecec}
+.barra-total{height:10px;background:#f0e2cb;border-radius:99px;overflow:hidden}
+.barra-total div{height:100%;background:linear-gradient(90deg,var(--verde2),var(--oro));border-radius:99px;transition:width .4s}
+.card.jug{padding:14px 14px 12px;margin:10px 0}
+.card.jug::before{height:5px}
+.jug-top{display:flex;justify-content:space-between;align-items:center}
+.jug-nom{font-size:18px;display:flex;align-items:center;gap:6px}
+.punto{width:10px;height:10px;border-radius:50%;background:#cdbfa8;display:inline-block}
+.punto.on{background:#2ecc71;box-shadow:0 0 0 3px rgba(46,204,113,.25)}
+.menu{font-size:26px!important;text-decoration:none!important;padding:0 6px}
+.estado-tag{display:inline-block;margin:6px 0;padding:4px 10px;border-radius:99px;font-weight:900;font-size:14px;background:#eee}
+.estado-tag.ok{background:#d9f3e2;color:var(--verde)}
+.estado-tag.oro{background:#fff1c2;color:#7a5a00}
+.estado-tag.juega{background:#dbeafe;color:#1e40af}
+.estado-tag.entro{background:#f3e8ff;color:#6b21a8}
+.estado-tag.nada{background:#f1ece4;color:var(--gris)}
+.pasos{display:flex;gap:5px;margin:4px 0 8px}
+.pasos span{flex:1;height:8px;border-radius:99px;background:#f0e2cb}
+.pasos span.hecho{background:var(--verde2)}
+.pasos span.actual{background:var(--oro);animation:latido 1.2s infinite}
+.jug-datos{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;font-weight:700;color:var(--gris)}
+.jug-amigo{margin-top:8px;font-size:15px;font-weight:700}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -287,12 +313,13 @@ const SVG_CANDADO = `<svg viewBox="0 0 90 100"><path class="arco" d="M24 46 V30 
 
 /* ---------- conexión con el servidor ---------- */
 const API_URL = 'api.php';
-// #demo: simula el servidor dentro del navegador (para probar sin hosting). PIN del panel en demo: demo
-if (location.hash === '#demo') store.set('as_demo', true);
+// #demo: simula el servidor dentro del navegador (para probar sin hosting).
+// En demo, clave de jugadores: 151126 · clave de anfitrión: demo
+if (location.hash === '#demo') { if (!store.get('as_demo')) { store.del('as_clave'); store.del('as_rol'); } store.set('as_demo', true); }
 const DEMO = !!store.get('as_demo');
 const bannerDemo = () => DEMO ? `<div class="banner">🧪 MODO DEMO · sorteo simulado en este celular <button class="link osc" id="salirDemo" style="margin-left:6px">Salir</button></div>` : '';
 document.addEventListener('click', e => {
-  if (e.target.id === 'salirDemo') { store.del('as_demo'); store.del('as_yo'); location.hash = 'juego'; location.reload(); }
+  if (e.target.id === 'salirDemo') { ['as_demo', 'as_yo', 'as_clave', 'as_rol'].forEach(k => store.del(k)); location.hash = 'juego'; location.reload(); }
 });
 
 function miToken() {
@@ -302,47 +329,68 @@ function miToken() {
 }
 
 async function api(accion, datos = {}) {
-  if (DEMO) return apiLocal(accion, datos);
+  const cuerpo = { accion, clave: store.get('as_clave') || '', ...datos };
   let r, j;
-  try { r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accion, ...datos }), cache: 'no-store' }); }
-  catch (e) { throw Object.assign(new Error('Sin conexión. Revisa tu internet e intenta de nuevo.'), { status: 0 }); }
-  try { j = await r.json(); } catch (e) { throw Object.assign(new Error(`El servidor no respondió bien (${r.status}).`), { status: r.status }); }
-  if (!j.ok) throw Object.assign(new Error(j.error || 'Error del servidor'), { status: r.status });
+  try {
+    if (DEMO) j = await apiLocal(accion, cuerpo);
+    else {
+      try { r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo), cache: 'no-store' }); }
+      catch (e) { throw Object.assign(new Error('Sin conexión. Revisa tu internet e intenta de nuevo.'), { status: 0 }); }
+      try { j = await r.json(); } catch (e) { throw Object.assign(new Error(`El servidor no respondió bien (${r.status}).`), { status: r.status }); }
+      if (!j.ok) throw Object.assign(new Error(j.error || 'Error del servidor'), { status: r.status });
+    }
+  } catch (e) {
+    // Clave vencida o cambiada: volver a pedirla
+    if (e.status === 401 && accion !== 'entrar') { store.del('as_clave'); store.del('as_rol'); setTimeout(ruta, 0); }
+    throw e;
+  }
   return j;
 }
+// Avisos de progreso al servidor (no bloquean el juego si fallan)
+function avisar(yo, evento, desafio) { api('progreso', { nombre: yo, token: miToken(), evento, desafio }).catch(() => { }); }
 
 // Servidor simulado (misma lógica que api.php)
 function apiLocal(accion, d) {
-  const db = store.get('as_demo_db') || Object.fromEntries(NOMBRES.map(n => [n, { token: null, asignado: null, orden: null }]));
+  const vacio = () => ({ token: null, reclamado_en: null, desafio_actual: null, completados: 0, ayudas: 0, saltos: 0, inicio_juego: null, ultima_actividad: null, asignado: null, orden: null, sorteado_en: null });
+  const db = store.get('as_demo_db') || Object.fromEntries(NOMBRES.map(n => [n, vacio()]));
   const save = () => store.set('as_demo_db', db);
   const fallo = (m, s = 400) => Promise.reject(Object.assign(new Error(m), { status: s }));
-  const ok = o => new Promise(r => setTimeout(() => r({ ok: true, ...o }), 250));
+  const ok = o => new Promise(r => setTimeout(() => r({ ok: true, ...o }), 200));
+  const esAdmin = d.clave === 'demo', esJugador = esAdmin || d.clave === '151126', t = Date.now();
   const fila = db[d.nombre];
-  if (['reclamar', 'resultado', 'sortear'].includes(accion) && !fila) return fallo('Ese nombre no está en la lista.', 404);
-  if (['admin', 'liberar', 'anular', 'reiniciar'].includes(accion) && d.pin !== 'demo') return fallo('PIN incorrecto. (En demo es: demo)', 403);
+  if (accion === 'entrar') return esAdmin ? ok({ rol: 'admin' }) : esJugador ? ok({ rol: 'jugador' }) : fallo('Clave de ingreso incorrecta. (En demo: 151126, o «demo» para el anfitrión)', 401);
+  if (['admin', 'liberar', 'anular', 'reiniciar', 'reiniciar_jugador'].includes(accion)) { if (!esAdmin) return fallo('Clave de anfitrión incorrecta.', 403); }
+  else if (!esJugador) return fallo('Clave de ingreso incorrecta.', 401);
+  if (['reclamar', 'resultado', 'sortear', 'progreso'].includes(accion) && !fila) return fallo('Ese nombre no está en la lista.', 404);
+  if (['resultado', 'sortear', 'progreso'].includes(accion) && fila.token !== d.token) return fallo('Este nombre está vinculado a otro celular.', 409);
   switch (accion) {
-    case 'estado': return ok({ ahora: Date.now(), inicio: null, whatsapp: '', participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, termino: !!db[n].asignado })) });
+    case 'estado': return ok({ ahora: t, inicio: null, whatsapp: '', participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, termino: !!db[n].asignado })) });
     case 'reclamar':
       if (fila.token && fila.token !== d.token) return fallo('Este nombre ya se está usando en otro celular. Pídele al anfitrión que lo libere.', 409);
-      fila.token = d.token; save(); return ok({ asignado: fila.asignado });
-    case 'resultado':
-      if (fila.token !== d.token) return fallo('Este nombre está vinculado a otro celular.', 409);
-      return ok({ asignado: fila.asignado, orden: fila.orden });
+      if (!fila.token) Object.assign(fila, { token: d.token, reclamado_en: t, ultima_actividad: t });
+      save(); return ok({ asignado: fila.asignado, completados: fila.completados });
+    case 'resultado': return ok({ asignado: fila.asignado, orden: fila.orden, completados: fila.completados });
+    case 'progreso':
+      fila.ultima_actividad = t;
+      if (d.evento === 'inicio') { fila.desafio_actual = d.desafio; fila.inicio_juego = fila.inicio_juego || t; }
+      if (d.evento === 'completo') { fila.completados = Math.max(fila.completados, d.desafio); fila.desafio_actual = null; fila.inicio_juego = fila.inicio_juego || t; }
+      if (d.evento === 'ayuda') fila.ayudas++;
+      if (d.evento === 'salto') fila.saltos++;
+      save(); return ok({});
     case 'sortear': {
-      if (fila.token !== d.token) return fallo('Este nombre está vinculado a otro celular.', 409);
       if (fila.asignado) return ok({ asignado: fila.asignado, orden: fila.orden });
       const tomados = new Set(NOMBRES.map(n => db[n].asignado).filter(Boolean));
       const pendientes = NOMBRES.filter(n => !db[n].asignado);
       let cand = NOMBRES.filter(n => n !== d.nombre && !tomados.has(n));
       if (pendientes.length === 2) { const otro = pendientes.find(n => n !== d.nombre); if (cand.includes(otro)) cand = [otro]; }
       if (!cand.length) return fallo('No quedan personas para sortear. Avísale al anfitrión.', 409);
-      fila.asignado = cand[Math.floor(Math.random() * cand.length)];
-      fila.orden = Math.max(0, ...NOMBRES.map(n => db[n].orden || 0)) + 1; fila.sorteado_en = new Date().toLocaleString('es-PE'); save();
-      return ok({ asignado: fila.asignado, orden: fila.orden });
+      Object.assign(fila, { asignado: cand[Math.floor(Math.random() * cand.length)], orden: Math.max(0, ...NOMBRES.map(n => db[n].orden || 0)) + 1, sorteado_en: t, completados: 3, desafio_actual: null, ultima_actividad: t });
+      save(); return ok({ asignado: fila.asignado, orden: fila.orden });
     }
-    case 'admin': return ok({ inicio: null, ahora: Date.now(), participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, asignado: db[n].asignado, orden: db[n].orden, sorteado_en: db[n].sorteado_en || null })).sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99)) });
-    case 'liberar': fila.token = null; save(); return ok({});
+    case 'admin': return ok({ inicio: null, ahora: t, participantes: NOMBRES.map(n => ({ nombre: n, ocupado: !!db[n].token, ...db[n], token: undefined })) });
+    case 'liberar': Object.assign(fila, { token: null, reclamado_en: null }); save(); return ok({});
     case 'anular': Object.assign(fila, { asignado: null, orden: null, sorteado_en: null }); save(); return ok({});
+    case 'reiniciar_jugador': db[d.nombre] = vacio(); save(); return ok({});
     case 'reiniciar': store.del('as_demo_db'); return ok({});
   }
   return fallo('Acción desconocida.');
@@ -390,6 +438,28 @@ function vistaError(msg, reintentar) {
   $('#reint').onclick = reintentar || ruta;
 }
 
+function vistaClave() {
+  pantalla(`
+    ${HERO}${bannerDemo()}
+    <section class="card centro">
+      <h2>¡Bienvenido!</h2>
+      <p class="desc">Ingresa la clave del Amigo Secreto</p>
+      <form class="resp" id="fclave">
+        <input type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="• • • • • •" required style="text-align:center;letter-spacing:.3em;font-size:26px">
+        <button class="btn">Entrar 🎄</button>
+      </form>
+    </section>`);
+  $('#fclave').onsubmit = async e => {
+    e.preventDefault();
+    const inp = $('#fclave input'), v = inp.value.trim();
+    try {
+      const r = await api('entrar', { clave: v });
+      store.set('as_clave', v); store.set('as_rol', r.rol); sonido('bien');
+      ruta();
+    } catch (err) { fallo(inp, err.message); inp.value = ''; }
+  };
+}
+
 function vistaInicio() {
   const yoToken = miToken();
   const estado = Object.fromEntries((ESTADO?.participantes || []).map(p => [p.nombre, p]));
@@ -410,7 +480,10 @@ function vistaInicio() {
     try {
       const r = await api('reclamar', { nombre: n, token: yoToken });
       store.set('as_yo', n);
-      if (r.asignado) { const p = prog(n); p.asignado = r.asignado; p.rondas = [true, true, true]; guardar(n, p); }
+      const p = prog(n);
+      if (r.asignado) { p.asignado = r.asignado; p.rondas = [true, true, true]; }
+      else if (r.completados) p.rondas = p.rondas.map((x, k) => x || k < r.completados);
+      guardar(n, p);
       vistaHub(n);
     } catch (e) { await modal(`<h3>No se pudo</h3><p>${esc(e.message)}</p>`, [{ t: 'OK' }]); ruta(); }
   });
@@ -464,6 +537,7 @@ function vistaHub(yo) {
   // Verifica en segundo plano que este celular sigue siendo dueño del nombre y si ya sorteó
   api('resultado', { nombre: yo, token: miToken() }).then(r => {
     if (r.asignado && !p.asignado) { p.asignado = r.asignado; p.rondas = [true, true, true]; guardar(yo, p); vistaHub(yo); }
+    else if (r.completados > p.rondas.filter(Boolean).length && $('#sortear') === null && document.body.contains($('.ronda'))) { p.rondas = p.rondas.map((x, k) => x || k < r.completados); guardar(yo, p); vistaHub(yo); }
   }).catch(async e => {
     if (e.status === 409) { store.del('as_yo'); await modal(`<h3>Nombre liberado</h3><p>${esc(e.message)}</p>`, [{ t: 'OK' }]); ruta(); }
   });
@@ -484,11 +558,13 @@ function vistaReto(yo, i) {
   let terminado = false;
   const ganar = () => { if (terminado) return; terminado = true; RETO = {}; completarRonda(yo, i); };
   RENDER[nivel.tipo](zona, nivel, ganar);
+  avisar(yo, 'inicio', i + 1);
   // Pista: texto (si hay) + ayuda dentro del juego (memoria, sopa, diferencias)
   if (nivel.ayuda || zona._ayuda) {
     extras.insertAdjacentHTML('beforeend', `<button class="ayuda-btn" id="ayudaBtn">💡 Pedir ayuda</button>${nivel.ayuda ? `<p class="ayuda" id="ayuda" hidden>${nivel.ayuda}</p>` : ''}`);
     $('#ayudaBtn').onclick = () => {
       if (nivel.ayuda) $('#ayuda').hidden = false;
+      avisar(yo, 'ayuda', i + 1);
       if (zona._ayuda) zona._ayuda(); else $('#ayudaBtn').remove();
     };
   }
@@ -499,7 +575,7 @@ function vistaReto(yo, i) {
     extras.insertAdjacentHTML('beforeend', `<button class="ayuda-btn" id="saltarBtn" style="border-style:solid">⏭️ Saltar este desafío</button>`);
     $('#saltarBtn').onclick = async () => {
       const r = await modal('<h3>¿Saltar?</h3><p>Pasarás al siguiente desafío.</p>', [{ t: 'Seguir intentando', cls: 'sec' }, { t: 'Saltar', cls: 'verde' }]);
-      if (r === 1) ganar();
+      if (r === 1) { avisar(yo, 'salto', i + 1); ganar(); }
     };
   };
   RETO = { onFallo: () => { if (++fallos >= 3) ofrecerSaltar(); } };
@@ -508,6 +584,7 @@ function vistaReto(yo, i) {
 
 function completarRonda(yo, i) {
   const p = prog(yo); p.rondas[i] = true;
+  avisar(yo, 'completo', i + 1);
   if (p.rondas.every(Boolean) && !p.fin) p.fin = Date.now();
   guardar(yo, p);
   sonido('bien'); fiesta(false);
@@ -810,81 +887,141 @@ RENDER.ruleta = (z, n, ganar) => {
   };
 };
 
-/* ---------- panel del anfitrión (#organizador) ---------- */
-let PIN = '';
+/* ---------- panel del anfitrión (se abre con la clave de administrador) ---------- */
+const hace = ms => {
+  if (!ms) return '—';
+  const s = Math.max(0, Math.round((ahoraServidor() - ms) / 1000));
+  if (s < 60) return 'ahora';
+  const m = Math.round(s / 60); if (m < 60) return `hace ${m} min`;
+  return `hace ${Math.floor(m / 60)} h ${m % 60} min`;
+};
+const hora = ms => ms ? new Date(ms).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '—';
+const duracion = (a, b) => { if (!a) return '—'; const s = Math.round(((b || ahoraServidor()) - a) / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+
+function estadoJugador(f) {
+  if (f.asignado) return { txt: `✅ Sorteó (#${f.orden})`, cls: 'ok' };
+  if (f.completados >= 3) return { txt: '🎁 Listo para sortear', cls: 'oro' };
+  if (f.desafio_actual) return { txt: `🎮 Jugando desafío ${f.desafio_actual}/3`, cls: 'juega' };
+  if (f.completados > 0) return { txt: `🎮 Superó ${f.completados}/3`, cls: 'juega' };
+  if (f.ocupado) return { txt: '👋 Eligió su nombre', cls: 'entro' };
+  return { txt: '⚪ Sin entrar', cls: 'nada' };
+}
+
 async function vistaAdmin() {
-  if (!PIN) {
-    pantalla(`
-      <div class="topbar"><a href="#juego" style="color:#fff;font-weight:800">← Inicio</a><span>Anfitrión</span></div>
-      ${bannerDemo()}
-      <section class="card"><h2>Panel del anfitrión</h2>
-        <form class="resp" id="fpin"><input type="password" inputmode="text" placeholder="PIN" autocomplete="current-password" required><button class="btn">Entrar</button></form>
-      </section>`);
-    $('#fpin').onsubmit = async e => {
-      e.preventDefault(); const v = $('#fpin input').value.trim();
-      try { await api('admin', { pin: v }); PIN = v; if (location.hash === '#organizador') vistaAdmin(); } catch (err) { fallo($('#fpin input'), err.message); }
-    };
-    return;
-  }
   let datos;
-  try { datos = await api('admin', { pin: PIN }); } catch (e) { if (e.status === 403) PIN = ''; return location.hash === '#organizador' && vistaError(e.message, vistaAdmin); }
-  if (location.hash !== '#organizador') return;
-  const ver = !!vistaAdmin.ver;
-  const lista = datos.participantes;
-  const hechos = lista.filter(f => f.asignado).length, conectados = lista.filter(f => f.ocupado).length;
+  try { datos = await api('admin'); }
+  catch (e) {
+    if (e.status === 403) { store.del('as_clave'); store.del('as_rol'); return ruta(); }
+    return vistaError(e.message, vistaAdmin);
+  }
+  if (store.get('as_rol') !== 'admin') return;
+  DESFASE = datos.ahora - Date.now();
+  const ver = !!vistaAdmin.ver, filtro = vistaAdmin.filtro || 'todos';
+  const L = datos.participantes;
+  const enLinea = f => f.ultima_actividad && ahoraServidor() - f.ultima_actividad < 3 * 60 * 1000;
+  const sortearon = L.filter(f => f.asignado), listos = L.filter(f => !f.asignado && f.completados >= 3);
+  const jugando = L.filter(f => !f.asignado && f.completados < 3 && (f.desafio_actual || f.completados > 0));
+  const sinEntrar = L.filter(f => !f.ocupado && !f.asignado && !f.completados);
+  const recibidos = new Set(sortearon.map(f => f.asignado));
+  const sinRegalador = NOMBRES.filter(n => !recibidos.has(n));
+  const filtros = { todos: L, jugando: [...jugando, ...listos], sortearon, sin: sinEntrar };
+  const visibles = [...filtros[filtro]].sort((a, b) => (b.ultima_actividad || 0) - (a.ultima_actividad || 0) || a.nombre.localeCompare(b.nombre));
+  const tarjeta = (num, txt, f) => `<button class="kpi ${filtro === f ? 'act' : ''}" data-filtro="${f}"><b>${num}</b><span>${txt}</span></button>`;
+
   pantalla(`
-    <div class="topbar"><a href="#juego" style="color:#fff;font-weight:800">← Inicio</a><span>Anfitrión</span></div>
+    <div class="topbar"><span>👑 Anfitrión</span><button id="salir">Salir</button></div>
     ${bannerDemo()}
     <section class="card">
-      <h2>Panel del anfitrión</h2>
-      <p class="desc"><b>${hechos} de ${lista.length}</b> ya sortearon · ${conectados} celulares conectados</p>
-      ${datos.inicio ? `<p class="nota">Inicio: ${new Date(datos.inicio).toLocaleString('es-PE')}</p>` : ''}
-      <div class="fila"><button class="btn sec chico" id="toggle">${ver ? '🙈 Ocultar parejas' : '👁 Mostrar parejas'}</button><button class="btn sec chico" id="refrescar">🔄 Actualizar</button></div>
-      <table class="tabla-admin">
-        <tr><th>#</th><th>Nombre</th><th>📱</th><th>Le regala a</th><th></th></tr>
-        ${lista.map(f => `<tr>
-          <td>${f.orden ?? ''}</td>
-          <td><b>${esc(f.nombre)}</b>${f.sorteado_en ? `<br><small>${esc(String(f.sorteado_en).slice(11, 16) || f.sorteado_en)}</small>` : ''}</td>
-          <td>${f.ocupado ? '✅' : '—'}</td>
-          <td>${f.asignado ? (ver ? `<b>${esc(f.asignado)}</b>` : '••••••') : '<span class="nota">pendiente</span>'}</td>
-          <td><button class="link osc" data-menu="${esc(f.nombre)}">⋯</button></td></tr>`).join('')}
-      </table>
-      <p class="nota">Se actualiza solo cada 10 segundos.</p>
+      <h2>Panel de moderación</h2>
+      <div class="kpis">
+        ${tarjeta(L.length, 'Todos', 'todos')}
+        ${tarjeta(jugando.length + listos.length, 'Jugando', 'jugando')}
+        ${tarjeta(`${sortearon.length}/${L.length}`, 'Sortearon', 'sortearon')}
+        ${tarjeta(sinEntrar.length, 'Sin entrar', 'sin')}
+      </div>
+      <div class="barra-total"><div style="width:${Math.round(sortearon.length / L.length * 100)}%"></div></div>
+      <p class="nota">${L.filter(enLinea).length} en línea ahora · se actualiza cada 10 s · ${datos.inicio ? 'inicio ' + new Date(datos.inicio).toLocaleString('es-PE') : 'juego abierto'}</p>
+      <div class="fila">
+        <button class="btn sec chico" id="toggle">${ver ? '🙈 Ocultar amigos' : '👁 Ver amigos secretos'}</button>
+        <button class="btn sec chico" id="refrescar">🔄 Actualizar</button>
+      </div>
+    </section>
+
+    ${visibles.map(f => {
+      const e = estadoJugador(f), P = participante(f.nombre);
+      return `<section class="card jug">
+        <div class="jug-top">
+          <div class="jug-nom"><span class="punto ${enLinea(f) ? 'on' : ''}"></span>${P ? P.icono : ''} <b>${esc(f.nombre)}</b></div>
+          <button class="link osc menu" data-menu="${esc(f.nombre)}" aria-label="Opciones">⋯</button>
+        </div>
+        <div class="estado-tag ${e.cls}">${e.txt}</div>
+        <div class="pasos">${[1, 2, 3].map(k => `<span class="${f.completados >= k ? 'hecho' : f.desafio_actual === k ? 'actual' : ''}"></span>`).join('')}</div>
+        <div class="jug-datos">
+          <span>📱 ${f.ocupado ? 'Eligió ' + hora(f.reclamado_en) : 'Sin celular'}</span>
+          <span>🕒 ${hace(f.ultima_actividad)}</span>
+          <span>⏱️ ${f.inicio_juego ? duracion(f.inicio_juego, f.sorteado_en) : '—'}</span>
+          <span>💡 ${f.ayudas} ayudas</span>
+          <span>⏭️ ${f.saltos} saltos</span>
+        </div>
+        <div class="jug-amigo">🎁 Amigo secreto: ${f.asignado ? (ver ? `<b>${esc(f.asignado)}</b> <small>(${hora(f.sorteado_en)})</small>` : '••••••') : '<span class="nota">aún no sortea</span>'}</div>
+      </section>`;
+    }).join('') || '<section class="card"><p class="desc">Nadie en este grupo.</p></section>'}
+
+    <section class="card">
+      <h2 class="peq">📋 Control del sorteo</h2>
+      <p class="desc">Faltan sortear (${L.length - sortearon.length}): ${L.filter(f => !f.asignado).map(f => esc(f.nombre)).join(', ') || '¡nadie! 🎉'}</p>
+      <p class="desc">Aún sin regalador (${sinRegalador.length}): ${ver ? (sinRegalador.map(esc).join(', ') || '—') : '<i>visible con «Ver amigos secretos»</i>'}</p>
+      ${sortearon.length ? `<button class="btn sec" id="copiarLista">📋 Copiar lista de parejas</button>` : ''}
     </section>
     <section class="card">
-      <h2 class="peq">Zona de peligro</h2>
+      <h2 class="peq">⚠️ Zona de peligro</h2>
       <button class="btn sec" id="reiniciar">♻️ Reiniciar todo el sorteo</button>
     </section>`);
+
+  $('#salir').onclick = async () => {
+    const i = await modal('<h3>¿Salir del panel?</h3><p>Tendrás que volver a ingresar la clave.</p>', [{ t: 'Cancelar', cls: 'sec' }, { t: 'Salir' }]);
+    if (i === 1) { store.del('as_clave'); store.del('as_rol'); clearTimeout(vistaAdmin.t); ruta(); }
+  };
   $('#toggle').onclick = () => { vistaAdmin.ver = !ver; vistaAdmin(); };
   $('#refrescar').onclick = vistaAdmin;
+  $$('[data-filtro]').forEach(b => b.onclick = () => { vistaAdmin.filtro = b.dataset.filtro; vistaAdmin(); });
+  $('#copiarLista') && ($('#copiarLista').onclick = () => {
+    const txt = '🎄 Amigo Secreto 2026\n' + sortearon.sort((a, b) => a.orden - b.orden).map(f => `${f.orden}. ${f.nombre} → ${f.asignado}`).join('\n');
+    copiar(txt);
+  });
   $$('[data-menu]').forEach(b => b.onclick = async () => {
     const n = b.dataset.menu;
-    const i = await modal(`<h3>${esc(n)}</h3><p><b>Liberar celular:</b> si entró con el nombre equivocado o cambió de celular.<br><b>Anular sorteo:</b> su persona vuelve al bombo y puede sortear otra vez.</p>`, [{ t: 'Cerrar', cls: 'sec' }, { t: 'Liberar', cls: 'verde' }, { t: 'Anular' }]);
+    const i = await modal(`<h3>${esc(n)}</h3>
+      <p style="text-align:left;font-size:15px"><b>📱 Liberar celular:</b> se equivocó de nombre o cambió de celular (conserva su avance).<br><br>
+      <b>🎲 Anular sorteo:</b> su amigo secreto vuelve al bombo y puede sortear otra vez.<br><br>
+      <b>♻️ Reiniciar jugador:</b> borra celular, avance y sorteo de esta persona.</p>`,
+      [{ t: 'Cerrar', cls: 'sec' }, { t: '📱 Liberar', cls: 'verde' }, { t: '🎲 Anular' }, { t: '♻️ Reiniciar' }]);
     if (!i) return;
-    if (i === 2) { const c = await modal(`<h3>¿Anular el sorteo de ${esc(n)}?</h3><p>Esto no se puede deshacer.</p>`, [{ t: 'No', cls: 'sec' }, { t: 'Sí, anular' }]); if (c !== 1) return; }
-    try { await api(i === 1 ? 'liberar' : 'anular', { pin: PIN, nombre: n }); toast('Listo ✅'); } catch (e) { toast(e.message); }
+    const accion = ['', 'liberar', 'anular', 'reiniciar_jugador'][i];
+    if (i >= 2) { const c = await modal(`<h3>¿Seguro?</h3><p>${i === 2 ? 'Anular' : 'Reiniciar'} a <b>${esc(n)}</b> no se puede deshacer.</p>`, [{ t: 'No', cls: 'sec' }, { t: 'Sí' }]); if (c !== 1) return; }
+    try { await api(accion, { nombre: n }); toast('Listo ✅'); } catch (e) { toast(e.message); }
     vistaAdmin();
   });
   $('#reiniciar').onclick = async () => {
-    const a = await modal('<h3>¿Reiniciar TODO?</h3><p>Se borran todos los sorteos y celulares vinculados.</p>', [{ t: 'Cancelar', cls: 'sec' }, { t: 'Reiniciar' }]);
+    const a = await modal('<h3>¿Reiniciar TODO?</h3><p>Se borran todos los sorteos, avances y celulares vinculados.</p>', [{ t: 'Cancelar', cls: 'sec' }, { t: 'Reiniciar' }]);
     if (a !== 1) return;
-    const b = await modal('<h3>¿Seguro, seguro?</h3><p>Todos tendrán que volver a sortear.</p>', [{ t: 'No', cls: 'sec' }, { t: 'Sí, borrar todo' }]);
+    const b = await modal('<h3>¿Seguro, seguro?</h3><p>Todos tendrán que volver a jugar y sortear.</p>', [{ t: 'No', cls: 'sec' }, { t: 'Sí, borrar todo' }]);
     if (b !== 1) return;
-    try { await api('reiniciar', { pin: PIN }); toast('Sorteo reiniciado'); } catch (e) { toast(e.message); }
+    try { await api('reiniciar'); toast('Sorteo reiniciado'); } catch (e) { toast(e.message); }
     vistaAdmin();
   };
   clearTimeout(vistaAdmin.t);
-  vistaAdmin.t = setTimeout(() => { if (location.hash === '#organizador' && $('.tabla-admin') && $('#modal').hidden) vistaAdmin(); }, 10000);
+  vistaAdmin.t = setTimeout(() => { if (store.get('as_rol') === 'admin' && $('.kpis') && $('#modal').hidden) vistaAdmin(); }, 10000);
 }
 
 /* ---------- router ---------- */
 let RUTA_ID = 0; // evita que una respuesta tardía pise una pantalla más nueva
 async function ruta() {
   const id = ++RUTA_ID;
-  const h = location.hash.slice(1);
-  if (h === 'organizador') return vistaAdmin();
+  if (!store.get('as_clave')) return vistaClave();
+  if (store.get('as_rol') === 'admin') return vistaAdmin();
   vistaCargando();
-  try { await cargarEstado(); } catch (e) { if (id === RUTA_ID) vistaError(e.message); return; }
+  try { await cargarEstado(); } catch (e) { if (id === RUTA_ID && store.get('as_clave')) vistaError(e.message); return; }
   if (id !== RUTA_ID) return;
   const enBase = ESTADO.participantes.map(x => x.nombre);
   const faltan = NOMBRES.filter(n => !enBase.includes(n));

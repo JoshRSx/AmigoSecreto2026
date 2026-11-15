@@ -187,6 +187,32 @@ textarea{font-size:16px;font-weight:700;min-height:70px;resize:vertical}
 .fila .btn.chico{flex:1}
   .pista-grande.frase{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:22px;line-height:1.35;color:var(--verde)}
 .pista-grande.frase small{font-family:'Nunito',system-ui,sans-serif;font-weight:700;display:block;margin-top:10px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 10px}
+.kpi{border:2px solid #ead9bf;background:#fff;border-radius:12px;padding:8px 2px;cursor:pointer;font-family:'Nunito',system-ui,sans-serif;color:var(--tinta)}
+.kpi b{display:block;font-size:22px;font-weight:900}
+.kpi span{font-size:11px;font-weight:800;color:var(--gris);text-transform:uppercase}
+.kpi.act{border-color:var(--rojo);background:#ffecec}
+.barra-total{height:10px;background:#f0e2cb;border-radius:99px;overflow:hidden}
+.barra-total div{height:100%;background:linear-gradient(90deg,var(--verde2),var(--oro));border-radius:99px;transition:width .4s}
+.card.jug{padding:14px 14px 12px;margin:10px 0}
+.card.jug::before{height:5px}
+.jug-top{display:flex;justify-content:space-between;align-items:center}
+.jug-nom{font-size:18px;display:flex;align-items:center;gap:6px}
+.punto{width:10px;height:10px;border-radius:50%;background:#cdbfa8;display:inline-block}
+.punto.on{background:#2ecc71;box-shadow:0 0 0 3px rgba(46,204,113,.25)}
+.menu{font-size:26px!important;text-decoration:none!important;padding:0 6px}
+.estado-tag{display:inline-block;margin:6px 0;padding:4px 10px;border-radius:99px;font-weight:900;font-size:14px;background:#eee}
+.estado-tag.ok{background:#d9f3e2;color:var(--verde)}
+.estado-tag.oro{background:#fff1c2;color:#7a5a00}
+.estado-tag.juega{background:#dbeafe;color:#1e40af}
+.estado-tag.entro{background:#f3e8ff;color:#6b21a8}
+.estado-tag.nada{background:#f1ece4;color:var(--gris)}
+.pasos{display:flex;gap:5px;margin:4px 0 8px}
+.pasos span{flex:1;height:8px;border-radius:99px;background:#f0e2cb}
+.pasos span.hecho{background:var(--verde2)}
+.pasos span.actual{background:var(--oro);animation:latido 1.2s infinite}
+.jug-datos{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;font-weight:700;color:var(--gris)}
+.jug-amigo{margin-top:8px;font-size:15px;font-weight:700}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>

@@ -1,16 +1,21 @@
 <?php
 /**
  * API del Amigo Secreto Familiar 2026 (PHP 7.0+ / MySQL o MariaDB con InnoDB).
+ * Todas las acciones van por POST JSON {"accion": ..., "clave": ..., ...}.
  *
- * Acciones (POST JSON {"accion": ..., ...}; "estado" también por GET):
- *   estado                         → hora del servidor, hora de inicio y nombres ocupados/terminados
- *   reclamar   {nombre, token}     → asocia un nombre a un celular (token aleatorio del navegador)
- *   resultado  {nombre, token}     → devuelve el sorteo ya hecho de ese nombre (o null)
- *   sortear    {nombre, token}     → sortea a quién le regala (una sola vez, sin repetir)
- *   admin      {pin}               → lista completa para el anfitrión
- *   liberar    {pin, nombre}       → desvincula el celular de un nombre
- *   anular     {pin, nombre}       → borra el sorteo de un nombre (su persona vuelve al bombo)
- *   reiniciar  {pin}               → borra todo
+ * Jugadores (requieren la clave de ingreso):
+ *   entrar     {clave}                       → rol 'jugador' o 'admin'
+ *   estado                                   → hora del servidor, inicio y nombres ocupados/terminados
+ *   reclamar   {nombre, token}               → vincula un nombre a un celular
+ *   resultado  {nombre, token}               → sorteo ya hecho (o null)
+ *   progreso   {nombre, token, evento, desafio} → evento: inicio | completo | ayuda | salto
+ *   sortear    {nombre, token}               → sortea su amigo secreto (una vez, sin repetir)
+ * Anfitrión (la clave debe ser la de admin):
+ *   admin                                    → todo el detalle para moderar
+ *   liberar    {nombre}                      → desvincula el celular (conserva el progreso)
+ *   anular     {nombre}                      → borra su sorteo (su persona vuelve al bombo)
+ *   reiniciar_jugador {nombre}               → borra celular, progreso y sorteo de esa persona
+ *   reiniciar                                → borra todo
  */
 declare(strict_types=1);
 
@@ -30,6 +35,9 @@ function error_api(string $msg, int $codigo = 400)
 {
     responder(['ok' => false, 'error' => $msg], $codigo);
 }
+function texto($v): string { return is_string($v) ? trim($v) : ''; }
+function ahora_db(): string { return date('Y-m-d H:i:s'); }
+function ms($fecha) { return $fecha ? strtotime((string)$fecha) * 1000 : null; }
 
 try {
     $pdo = new PDO(
@@ -44,11 +52,22 @@ try {
 
 $entrada = json_decode(file_get_contents('php://input') ?: '', true);
 if (!is_array($entrada)) $entrada = [];
-$accion = $entrada['accion'] ?? ($_GET['accion'] ?? 'estado');
+$accion = $entrada['accion'] ?? ($_GET['accion'] ?? 'ping');
+$clave = texto($entrada['clave'] ?? '');
 
-function texto($v): string { return is_string($v) ? trim($v) : ''; }
+$esAdmin = $clave !== '' && hash_equals((string)$cfg['pin_admin'], $clave);
+$esJugador = $esAdmin || ($clave !== '' && hash_equals((string)$cfg['clave_jugadores'], $clave));
 
-function validar_jugador(PDO $pdo, array $in): array
+function exigir_jugador(bool $ok)
+{
+    if (!$ok) { usleep(400000); error_api('Clave de ingreso incorrecta.', 401); }
+}
+function exigir_admin(bool $ok)
+{
+    if (!$ok) { usleep(400000); error_api('Clave de anfitrión incorrecta.', 403); }
+}
+
+function validar_jugador(PDO $pdo, array $in, bool $mismoCelular = true): array
 {
     $nombre = texto($in['nombre'] ?? '');
     $token = texto($in['token'] ?? '');
@@ -57,16 +76,8 @@ function validar_jugador(PDO $pdo, array $in): array
     $st->execute([$nombre]);
     $fila = $st->fetch();
     if (!$fila) error_api('Ese nombre no está en la lista.', 404);
+    if ($mismoCelular && $fila['token'] !== $token) error_api('Este nombre está vinculado a otro celular.', 409);
     return [$fila, $nombre, $token];
-}
-
-function exigir_pin(array $cfg, array $in)
-{
-    $pin = texto($in['pin'] ?? '');
-    if ($pin === '' || !hash_equals((string)$cfg['pin_admin'], $pin)) {
-        usleep(400000); // frena intentos repetidos
-        error_api('PIN incorrecto.', 403);
-    }
 }
 
 function inicio_ms(array $cfg)
@@ -79,7 +90,17 @@ function inicio_ms(array $cfg)
 
 switch ($accion) {
 
+    case 'ping': // para comprobar la instalación desde el navegador
+        $n = (int)$pdo->query('SELECT COUNT(*) FROM participantes')->fetchColumn();
+        responder(['ok' => true, 'participantes' => $n]);
+
+    case 'entrar':
+        if ($esAdmin) responder(['ok' => true, 'rol' => 'admin']);
+        exigir_jugador($esJugador);
+        responder(['ok' => true, 'rol' => 'jugador']);
+
     case 'estado':
+        exigir_jugador($esJugador);
         $filas = $pdo->query('SELECT nombre, token IS NOT NULL AS ocupado, asignado IS NOT NULL AS termino FROM participantes')->fetchAll();
         foreach ($filas as &$f) { $f['ocupado'] = (bool)$f['ocupado']; $f['termino'] = (bool)$f['termino']; }
         responder([
@@ -91,25 +112,50 @@ switch ($accion) {
         ]);
 
     case 'reclamar':
-        list($fila, $nombre, $token) = validar_jugador($pdo, $entrada);
+        exigir_jugador($esJugador);
+        list($fila, $nombre, $token) = validar_jugador($pdo, $entrada, false);
         if ($fila['token'] !== null && $fila['token'] !== $token) {
             error_api('Este nombre ya se está usando en otro celular. Pídele al anfitrión que lo libere.', 409);
         }
         if ($fila['token'] === null) {
-            // Solo lo toma si sigue libre (evita que dos celulares lo reclamen a la vez)
-            $st = $pdo->prepare('UPDATE participantes SET token = ? WHERE nombre = ? AND token IS NULL');
-            $st->execute([$token, $nombre]);
+            $st = $pdo->prepare('UPDATE participantes SET token = ?, reclamado_en = ?, ultima_actividad = ? WHERE nombre = ? AND token IS NULL');
+            $st->execute([$token, ahora_db(), ahora_db(), $nombre]);
             if ($st->rowCount() === 0) error_api('Este nombre acaba de ser tomado en otro celular.', 409);
         }
-        responder(['ok' => true, 'asignado' => $fila['asignado']]);
+        responder(['ok' => true, 'asignado' => $fila['asignado'], 'completados' => (int)$fila['completados']]);
 
     case 'resultado':
-        list($fila, , $token) = validar_jugador($pdo, $entrada);
-        if ($fila['token'] !== $token) error_api('Este nombre está vinculado a otro celular.', 409);
-        responder(['ok' => true, 'asignado' => $fila['asignado'], 'orden' => $fila['orden'] !== null ? (int)$fila['orden'] : null]);
+        exigir_jugador($esJugador);
+        list($fila) = validar_jugador($pdo, $entrada);
+        responder(['ok' => true, 'asignado' => $fila['asignado'], 'orden' => $fila['orden'] !== null ? (int)$fila['orden'] : null, 'completados' => (int)$fila['completados']]);
+
+    case 'progreso':
+        exigir_jugador($esJugador);
+        list(, $nombre) = validar_jugador($pdo, $entrada);
+        $evento = texto($entrada['evento'] ?? '');
+        $d = (int)($entrada['desafio'] ?? 0);
+        if ($d < 1 || $d > 3) error_api('Desafío inválido.');
+        $t = ahora_db();
+        if ($evento === 'inicio') {
+            $st = $pdo->prepare('UPDATE participantes SET desafio_actual = ?, inicio_juego = COALESCE(inicio_juego, ?), ultima_actividad = ? WHERE nombre = ?');
+            $st->execute([$d, $t, $t, $nombre]);
+        } elseif ($evento === 'completo') {
+            $st = $pdo->prepare('UPDATE participantes SET completados = GREATEST(completados, ?), desafio_actual = NULL, inicio_juego = COALESCE(inicio_juego, ?), ultima_actividad = ? WHERE nombre = ?');
+            $st->execute([$d, $t, $t, $nombre]);
+        } elseif ($evento === 'ayuda') {
+            $st = $pdo->prepare('UPDATE participantes SET ayudas = ayudas + 1, ultima_actividad = ? WHERE nombre = ?');
+            $st->execute([$t, $nombre]);
+        } elseif ($evento === 'salto') {
+            $st = $pdo->prepare('UPDATE participantes SET saltos = saltos + 1, ultima_actividad = ? WHERE nombre = ?');
+            $st->execute([$t, $nombre]);
+        } else {
+            error_api('Evento inválido.');
+        }
+        responder(['ok' => true]);
 
     case 'sortear':
-        list(, $nombre, $token) = validar_jugador($pdo, $entrada);
+        exigir_jugador($esJugador);
+        list(, $nombre, $token) = validar_jugador($pdo, $entrada, false);
         $ini = inicio_ms($cfg);
         if ($ini !== null && microtime(true) * 1000 < $ini) error_api('El juego aún no empieza.', 403);
 
@@ -125,14 +171,14 @@ switch ($accion) {
             $tomados = []; $pendientes = []; $maxOrden = 0;
             foreach ($todos as $f) {
                 if ($f['asignado'] !== null) { $tomados[$f['asignado']] = true; $maxOrden = max($maxOrden, (int)$f['orden']); }
-                else $pendientes[] = $f['nombre']; // aún no sortean (incluye al jugador actual)
+                else $pendientes[] = $f['nombre'];
             }
             $candidatos = [];
             foreach ($todos as $f) {
                 if ($f['nombre'] !== $nombre && !isset($tomados[$f['nombre']])) $candidatos[] = $f['nombre'];
             }
-            // Regla anti-bloqueo: si solo quedamos dos por sortear y el otro sigue libre,
-            // me toca él; si no, al final quedaría solo consigo mismo.
+            // Regla anti-bloqueo: si solo quedan dos por sortear y el otro sigue libre, me toca él;
+            // si no, al final quedaría solo consigo mismo.
             if (count($pendientes) === 2) {
                 $otro = $pendientes[0] === $nombre ? $pendientes[1] : $pendientes[0];
                 if (in_array($otro, $candidatos, true)) $candidatos = [$otro];
@@ -140,8 +186,9 @@ switch ($accion) {
             if (!$candidatos) { $pdo->rollBack(); error_api('No quedan personas para sortear. Avísale al anfitrión.', 409); }
 
             $elegido = $candidatos[random_int(0, count($candidatos) - 1)];
-            $st = $pdo->prepare('UPDATE participantes SET asignado = ?, orden = ?, sorteado_en = ? WHERE nombre = ?');
-            $st->execute([$elegido, $maxOrden + 1, date('Y-m-d H:i:s'), $nombre]);
+            $t = ahora_db();
+            $st = $pdo->prepare('UPDATE participantes SET asignado = ?, orden = ?, sorteado_en = ?, completados = 3, desafio_actual = NULL, ultima_actividad = ? WHERE nombre = ?');
+            $st->execute([$elegido, $maxOrden + 1, $t, $t, $nombre]);
             $pdo->commit();
             responder(['ok' => true, 'asignado' => $elegido, 'orden' => $maxOrden + 1]);
         } catch (Throwable $e) {
@@ -150,26 +197,48 @@ switch ($accion) {
         }
 
     case 'admin':
-        exigir_pin($cfg, $entrada);
-        $filas = $pdo->query('SELECT nombre, token IS NOT NULL AS ocupado, asignado, orden, sorteado_en FROM participantes ORDER BY orden IS NULL, orden, nombre')->fetchAll();
-        foreach ($filas as &$f) { $f['ocupado'] = (bool)$f['ocupado']; $f['orden'] = $f['orden'] !== null ? (int)$f['orden'] : null; }
-        responder(['ok' => true, 'participantes' => $filas, 'inicio' => inicio_ms($cfg), 'ahora' => (int)round(microtime(true) * 1000)]);
+        exigir_admin($esAdmin);
+        $filas = $pdo->query('SELECT * FROM participantes ORDER BY nombre')->fetchAll();
+        $out = [];
+        foreach ($filas as $f) {
+            $out[] = [
+                'nombre' => $f['nombre'],
+                'ocupado' => $f['token'] !== null,
+                'reclamado_en' => ms($f['reclamado_en']),
+                'desafio_actual' => $f['desafio_actual'] !== null ? (int)$f['desafio_actual'] : null,
+                'completados' => (int)$f['completados'],
+                'ayudas' => (int)$f['ayudas'],
+                'saltos' => (int)$f['saltos'],
+                'inicio_juego' => ms($f['inicio_juego']),
+                'ultima_actividad' => ms($f['ultima_actividad']),
+                'asignado' => $f['asignado'],
+                'orden' => $f['orden'] !== null ? (int)$f['orden'] : null,
+                'sorteado_en' => ms($f['sorteado_en']),
+            ];
+        }
+        responder(['ok' => true, 'participantes' => $out, 'inicio' => inicio_ms($cfg), 'ahora' => (int)round(microtime(true) * 1000)]);
 
     case 'liberar':
-        exigir_pin($cfg, $entrada);
-        $st = $pdo->prepare('UPDATE participantes SET token = NULL WHERE nombre = ?');
+        exigir_admin($esAdmin);
+        $st = $pdo->prepare('UPDATE participantes SET token = NULL, reclamado_en = NULL WHERE nombre = ?');
         $st->execute([texto($entrada['nombre'] ?? '')]);
         responder(['ok' => true]);
 
     case 'anular':
-        exigir_pin($cfg, $entrada);
+        exigir_admin($esAdmin);
         $st = $pdo->prepare('UPDATE participantes SET asignado = NULL, orden = NULL, sorteado_en = NULL WHERE nombre = ?');
         $st->execute([texto($entrada['nombre'] ?? '')]);
         responder(['ok' => true]);
 
+    case 'reiniciar_jugador':
+        exigir_admin($esAdmin);
+        $st = $pdo->prepare('UPDATE participantes SET token = NULL, reclamado_en = NULL, desafio_actual = NULL, completados = 0, ayudas = 0, saltos = 0, inicio_juego = NULL, ultima_actividad = NULL, asignado = NULL, orden = NULL, sorteado_en = NULL WHERE nombre = ?');
+        $st->execute([texto($entrada['nombre'] ?? '')]);
+        responder(['ok' => true]);
+
     case 'reiniciar':
-        exigir_pin($cfg, $entrada);
-        $pdo->exec('UPDATE participantes SET token = NULL, asignado = NULL, orden = NULL, sorteado_en = NULL');
+        exigir_admin($esAdmin);
+        $pdo->exec('UPDATE participantes SET token = NULL, reclamado_en = NULL, desafio_actual = NULL, completados = 0, ayudas = 0, saltos = 0, inicio_juego = NULL, ultima_actividad = NULL, asignado = NULL, orden = NULL, sorteado_en = NULL');
         responder(['ok' => true]);
 
     default:

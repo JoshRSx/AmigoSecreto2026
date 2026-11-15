@@ -6,7 +6,7 @@ U='http://127.0.0.1:8080/'; errs=[]; asign={}
 with sync_playwright() as p:
     b=p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
     pg=b.new_context(viewport={'width':390,'height':844}, is_mobile=True, has_touch=True).new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
-    pg.goto(U+'#demo'); pg.wait_for_selector('.nombre'); print('banner demo:', pg.is_visible('text=MODO DEMO'))
+    pg.goto(U+'#demo'); pg.wait_for_selector('#fclave'); pg.fill('#fclave input','151126'); pg.click('#fclave button'); pg.wait_for_selector('.nombre'); print('banner demo:', pg.is_visible('text=MODO DEMO'))
     for P in content['participantes']:
         n=P['nombre']
         pg.evaluate('localStorage.removeItem("as_yo"); localStorage.removeItem("as_token")'); pg.goto(U+'#juego'); pg.reload(); pg.wait_for_selector('.nombre')
